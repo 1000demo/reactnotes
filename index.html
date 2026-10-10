@@ -1,0 +1,2853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>React Notes</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%9B%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #EEF2F5;
+    --surface: #FFFFFF;
+    --ink: #15202B;
+    --muted: #55677A;
+    --line: #D5DEE6;
+    --accent: #0E7C86;
+    --accent-soft: #DAF0F2;
+    --daily: #B45309;
+    --daily-soft: #FDEBD3;
+    --more: #6D4AC2;
+    --code-bg: #101C28;
+    --code-head: #172635;
+    --code-line: #22384A;
+    --code-ink: #D6E2EE;
+    --head: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+    --body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+  }
+  :root[data-theme="dark"] {
+    --bg: #0B131A;
+    --surface: #111C26;
+    --ink: #E4ECF3;
+    --muted: #8DA0B2;
+    --line: #243441;
+    --accent: #4CC3CE;
+    --accent-soft: #11363B;
+    --daily: #F0A357;
+    --daily-soft: #3A2A17;
+    --more: #B79CF2;
+    --code-bg: #0A1219;
+    --code-head: #111E29;
+    --code-line: #1F3140;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0B131A;
+      --surface: #111C26;
+      --ink: #E4ECF3;
+      --muted: #8DA0B2;
+      --line: #243441;
+      --accent: #4CC3CE;
+      --accent-soft: #11363B;
+      --daily: #F0A357;
+      --daily-soft: #3A2A17;
+    --more: #B79CF2;
+      --code-bg: #0A1219;
+      --code-head: #111E29;
+      --code-line: #1F3140;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 400 1rem/1.65 var(--body);
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .app { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 100vh; }
+
+  /* ---------- sidebar ---------- */
+  .side {
+    position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    padding: 24px 14px 40px;
+    background: var(--surface);
+    border-right: 1px solid var(--line);
+  }
+  .brand { font: 800 1.25rem/1.2 var(--head); padding: 0 10px 14px; letter-spacing: -0.01em; }
+  .side h3 { margin: 18px 10px 6px; font: 700 .84rem var(--head); color: var(--muted); }
+  .side a {
+    display: block; padding: 5px 10px; margin: 1px 0;
+    color: var(--muted); text-decoration: none; font-size: .9rem; line-height: 1.4;
+    border-left: 2px solid transparent; border-radius: 0 6px 6px 0;
+  }
+  .side a:hover { color: var(--ink); }
+  .side a.active { color: var(--ink); background: var(--accent-soft); border-left-color: var(--accent); }
+  .side a[hidden] { display: none; }
+
+  /* ---------- main ---------- */
+  main { padding: 0 clamp(16px, 4vw, 56px) 96px; max-width: 1000px; width: 100%; }
+  .topbar {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 10px; align-items: center;
+    padding: 14px 0; background: var(--bg);
+  }
+  .topbar input {
+    flex: 1; min-width: 0; padding: 10px 14px;
+    font: inherit; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+  }
+  .btn {
+    padding: 9px 14px; font: 600 .86rem var(--body); color: var(--ink);
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px; cursor: pointer;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .menu-btn { display: none; }
+
+  .hero { padding: 28px 0 8px; }
+  .hero h1 { margin: 0; font: 800 clamp(2.2rem, 6vw, 3.6rem)/1.05 var(--head); letter-spacing: -0.03em; }
+  .hero p { max-width: 62ch; color: var(--muted); font-size: 1.05rem; margin: 14px 0 0; }
+  .meta { margin-top: 10px; font-size: .88rem; color: var(--muted); }
+  .meta kbd {
+    font: 500 .8rem var(--mono); padding: 1px 6px;
+    border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; background: var(--surface);
+  }
+
+  table { width: 100%; border-collapse: collapse; margin: 18px 0 6px; font-size: .94rem; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font: 700 .88rem var(--head); color: var(--muted); border-bottom: 2px solid var(--line); }
+  .table-wrap { overflow-x: auto; }
+
+  /* ---------- sections ---------- */
+  .topic { --g: var(--accent); padding: 44px 0 6px; margin-top: 36px; border-top: 1px solid var(--line); scroll-margin-top: 70px; }
+  .topic[data-group="daily"] { --g: var(--daily); }
+  .topic[data-group="more"] { --g: var(--more); }
+  .topic[hidden] { display: none; }
+  .topic h2 {
+    margin: 8px 0 12px; padding-left: 14px;
+    border-left: 5px solid var(--g);
+    font: 700 clamp(1.4rem, 3vw, 1.85rem)/1.2 var(--head); letter-spacing: -0.015em;
+  }
+  .chip {
+    display: inline-block; padding: 1px 10px;
+    font: 600 .8rem var(--body); color: var(--g);
+    border: 1px solid var(--g); border-radius: 999px;
+  }
+  .topic p { max-width: 70ch; margin: 10px 0; }
+  .topic h4 { margin: 24px 0 4px; font: 700 1.05rem var(--head); }
+  .topic ul { max-width: 74ch; padding-left: 1.2rem; }
+  .topic li { margin: 5px 0; }
+
+  code {
+    font: 500 .88em var(--mono);
+    background: var(--accent-soft); padding: 1px 6px; border-radius: 4px;
+  }
+
+  .note {
+    max-width: 74ch; margin: 14px 0; padding: 10px 14px;
+    border-left: 3px solid var(--daily); background: var(--daily-soft);
+    border-radius: 0 6px 6px 0; font-size: .94rem;
+  }
+  .note.tip { border-left-color: var(--accent); background: var(--accent-soft); }
+  .note p { margin: 0; }
+
+  /* ---------- code blocks ---------- */
+  .code { margin: 16px 0; border-radius: 8px; overflow: hidden; background: var(--code-bg); border: 1px solid var(--code-line); }
+  .code-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 5px 8px 5px 14px; background: var(--code-head); color: #9DB1C3;
+    font: 500 .78rem var(--mono);
+  }
+  .copy {
+    padding: 3px 10px; font: 500 .76rem var(--mono); color: #C7D6E3;
+    background: transparent; border: 1px solid #36506A; border-radius: 5px; cursor: pointer;
+  }
+  .copy:hover { border-color: #5CC8D4; color: #fff; }
+  pre { margin: 0; padding: 14px 16px; overflow-x: auto; font: 400 .84rem/1.65 var(--mono); color: var(--code-ink); tab-size: 2; }
+  pre code { background: none; padding: 0; font: inherit; color: inherit; }
+  .tk-c { color: #6F8799; font-style: italic; }
+  .tk-s { color: #A9D98F; }
+  .tk-t { color: #5CC8D4; }
+  .tk-k { color: #C9A0F0; }
+  .tk-n { color: #F2A766; }
+  .tk-f { color: #7DB8FF; }
+
+  #empty { padding: 40px 0; color: var(--muted); }
+
+  /* ---------- small screens ---------- */
+  @media (max-width: 900px) {
+    .app { display: block; }
+    .side {
+      position: fixed; inset: 0 auto 0 0; width: min(310px, 86vw); z-index: 20;
+      transform: translateX(-102%); transition: transform .2s ease;
+      box-shadow: 0 0 40px rgba(0, 0, 0, .35);
+    }
+    .side.open { transform: none; }
+    .menu-btn { display: inline-block; }
+  }
+
+  /* ---------- print ---------- */
+  @media print {
+    .side, .topbar, .copy { display: none !important; }
+    .app { display: block; }
+    body { background: #fff; color: #000; }
+    .code { background: #fff; border-color: #999; }
+    .code-head { background: #eee; color: #000; }
+    pre, pre span { color: #000 !important; font-style: normal !important; }
+    .topic { break-inside: avoid-page; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <nav class="side" id="side" aria-label="Sections"></nav>
+
+  <main>
+    <div class="topbar">
+      <button class="btn menu-btn" id="menuBtn" type="button">Menu</button>
+      <input id="search" type="search" placeholder="Search this sheet: useEffect, pagination, login..." aria-label="Search sections">
+      <button class="btn" id="themeBtn" type="button">Dark mode</button>
+    </div>
+
+    <header class="hero">
+      <h1>React Notes</h1>
+      <p>Hooks from my class notes, plus the patterns I need almost every day in a React project: search, pagination, forms, login, API calls and more. Every block has a copy button.</p>
+      <p class="meta">Press <kbd>/</kbd> to jump to search. <span id="count"></span></p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>I need to...</th><th>Use</th></tr></thead>
+          <tbody>
+            <tr><td>Keep a value that updates the screen when it changes</td><td><code>useState</code></td></tr>
+            <tr><td>Run code after render: API call, timer, event listener</td><td><code>useEffect</code></td></tr>
+            <tr><td>Reach a DOM element, or keep a value without re-rendering</td><td><code>useRef</code></td></tr>
+            <tr><td>Skip a heavy calculation when its inputs did not change</td><td><code>useMemo</code></td></tr>
+            <tr><td>Keep the same function reference for a child component</td><td><code>useCallback</code> + <code>memo</code></td></tr>
+            <tr><td>Share data with deep children without passing props</td><td><code>useContext</code></td></tr>
+            <tr><td>Manage related state with many actions</td><td><code>useReducer</code></td></tr>
+            <tr><td>Measure the DOM before the browser paints</td><td><code>useLayoutEffect</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </header>
+
+    <p id="empty" hidden>No section matches your search. Try a shorter word.</p>
+
+    <!-- =====================================================
+         CORE HOOKS (from my notes)
+         ===================================================== -->
+
+    <section class="topic" id="usestate" data-group="core" data-kind="Hook">
+      <h2>How to use useState?</h2>
+      <p>State is data that belongs to a component. When you change it with the setter function, React re-renders and the screen updates.</p>
+      <script type="text/plain" data-code data-title="App.jsx">
+import { useState } from "react";
+
+function App() {
+  const [count, setCount] = useState(40);
+
+  const increase = () => setCount((prev) => prev + 4);
+  const decrease = () => setCount((prev) => prev - 4);
+
+  return (
+    <>
+      <h1>Counter: {count}</h1>
+      <button onClick={increase}>Increase by 4</button>
+      <button onClick={decrease}>Decrease by 4</button>
+    </>
+  );
+}
+
+export default App;
+      </script>
+      <div class="note tip"><p>Use <code>setCount((prev) =&gt; ...)</code> whenever the new value depends on the old value. Also, name the function after what it does: a function called <code>incraseCounter</code> that subtracts 4 is confusing.</p></div>
+    </section>
+
+    <section class="topic" id="useeffect" data-group="core" data-kind="Hook">
+      <h2>How to use useEffect (timer with cleanup)?</h2>
+      <p><code>useEffect</code> runs code after the component is shown on screen. Anything you start (timer, listener) must be stopped in the cleanup function.</p>
+      <script type="text/plain" data-code data-title="App.jsx">
+import { useState, useEffect } from "react";
+
+function App() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCount((prev) => prev + 1);
+    }, 2000);
+
+    // cleanup: runs when the component is removed
+    return () => clearInterval(timer);
+  }, []); // [] = run once, after the first render
+
+  return <h1>Timer ticked {count} times.</h1>;
+}
+
+export default App;
+      </script>
+      <h4>The dependency array decides when it runs</h4>
+      <script type="text/plain" data-code data-title="three forms">
+useEffect(() => { /* ... */ });            // after every render
+useEffect(() => { /* ... */ }, []);        // once, after the first render
+useEffect(() => { /* ... */ }, [userId]);  // first render + whenever userId changes
+      </script>
+    </section>
+
+    <section class="topic" id="useref" data-group="core" data-kind="Hook">
+      <h2>How to use useRef?</h2>
+      <p>A ref holds a value that stays between renders. Changing it does <b>not</b> re-render. Most common use: grab a DOM element (focus an input, change its style).</p>
+      <script type="text/plain" data-code data-title="App.jsx">
+import { useRef } from "react";
+
+function App() {
+  const inputEle = useRef(null);
+
+  const handleClick = () => {
+    console.log(inputEle.current); // the real <input> element
+    inputEle.current.focus();
+    inputEle.current.style.backgroundColor = "lightblue";
+    inputEle.current.style.borderColor = "red";
+  };
+
+  return (
+    <>
+      <input
+        type="text"
+        ref={inputEle}
+        style={{ border: "1px solid #ccc", outline: "none", padding: "10px" }}
+      />
+      <button onClick={handleClick}>Click Me...</button>
+    </>
+  );
+}
+
+export default App;
+      </script>
+      <h4>Second use: remember a value without re-rendering</h4>
+      <script type="text/plain" data-code data-title="snippet">
+const renderCount = useRef(0);
+renderCount.current += 1; // does NOT cause a re-render
+      </script>
+      <div class="note"><p>Start with <code>useRef(null)</code>. In the notes it was <code>useRef(() =&gt; {})</code>, which works but is not the convention. <code>.current</code> points to the element only after the first render.</p></div>
+    </section>
+
+    <section class="topic" id="usememo" data-group="core" data-kind="Hook">
+      <h2>How to use useMemo?</h2>
+      <p><code>useMemo</code> remembers the result of a calculation and recalculates only when its dependencies change. Click Increment below and "Calculation done" will not print again.</p>
+      <script type="text/plain" data-code data-title="App.jsx">
+import { useMemo, useState } from "react";
+
+function App() {
+  const [number, setNumber] = useState(0);
+  const [count, setCount] = useState(0);
+
+  const cube = (x) => {
+    console.log("Calculation done");
+    return Math.pow(x, 3);
+  };
+
+  // runs only when `number` changes, not when `count` changes
+  const result = useMemo(() => cube(number), [number]);
+
+  return (
+    <>
+      <input
+        type="number"
+        value={number}
+        onChange={(e) => setNumber(Number(e.target.value))}
+      />
+      <h1>Cube of number: {result}</h1>
+
+      <button onClick={() => setCount(count + 1)}>Increment</button>
+      <h2>Counter: {count}</h2>
+      <button onClick={() => setCount(count - 1)}>Decrement</button>
+    </>
+  );
+}
+
+export default App;
+      </script>
+      <div class="note tip"><p>Use <code>useMemo</code> only when the calculation is expensive, for example filtering thousands of products. For small work it adds more cost than it saves.</p></div>
+    </section>
+
+    <section class="topic" id="usecallback" data-group="core" data-kind="Hook">
+      <h2>How to use useCallback?</h2>
+      <p>Every render creates a new function. If you pass that function as a prop, the child sees a "changed" prop and re-renders. <code>useCallback</code> keeps the same function, and <code>memo</code> makes the child skip renders when props are unchanged. You need both.</p>
+      <script type="text/plain" data-code data-title="components/Header.jsx">
+import { memo } from "react";
+
+const Header = ({ onLogout }) => {
+  console.log("Header rendered");
+  return <button onClick={onLogout}>Logout</button>;
+};
+
+export default memo(Header);
+      </script>
+      <script type="text/plain" data-code data-title="App.jsx">
+import { useCallback, useState } from "react";
+import Header from "./components/Header";
+
+function App() {
+  const [count, setCount] = useState(0);
+
+  // same function on every render, so memo(Header) can skip re-rendering
+  const handleLogout = useCallback(() => {
+    console.log("Logged out");
+  }, []);
+
+  return (
+    <>
+      <Header onLogout={handleLogout} />
+      <button onClick={() => setCount((prev) => prev + 1)}>Counter</button>
+      <h1>Counter: {count}</h1>
+    </>
+  );
+}
+
+export default App;
+      </script>
+      <div class="note"><p>Without <code>memo</code> on the child, <code>useCallback</code> changes nothing you can see. If a function uses state or props, put them in the dependency array.</p></div>
+    </section>
+
+    <section class="topic" id="context" data-group="core" data-kind="Hook">
+      <h2>How to use Context API (useContext)?</h2>
+      <p>Context shares data with any component below the provider, so you avoid passing props through every level (prop drilling). Three steps: create, provide, consume.</p>
+      <h4>1. Create the context and provider</h4>
+      <script type="text/plain" data-code data-title="context/AppContext.jsx">
+import { createContext } from "react";
+
+export const MyContext = createContext();
+
+const AppContext = (props) => {
+  const mobile = "1234567890";
+  const city = "Pune";
+
+  return (
+    <MyContext.Provider value={{ mobile, city }}>
+      {props.children}
+    </MyContext.Provider>
+  );
+};
+
+export default AppContext;
+      </script>
+      <h4>2. Wrap the components that need the data</h4>
+      <script type="text/plain" data-code data-title="App.jsx">
+import AppContext from "./context/AppContext";
+import Contact from "./components/Contact";
+import Profile from "./components/Profile";
+import Footer from "./components/Footer";
+
+function App() {
+  return (
+    <AppContext>
+      <Contact />
+      <Profile />
+      <Footer />
+    </AppContext>
+  );
+}
+
+export default App;
+      </script>
+      <h4>3. Read the value with useContext</h4>
+      <script type="text/plain" data-code data-title="components/Profile.jsx">
+import { useContext } from "react";
+import { MyContext } from "../context/AppContext";
+
+const Profile = () => {
+  const { city } = useContext(MyContext);
+
+  return (
+    <div style={{ border: "1px solid red", margin: "20px" }}>
+      <h2>Profile</h2>
+      <h4>City: {city}</h4>
+    </div>
+  );
+};
+
+export default Profile;
+      </script>
+    </section>
+
+    <section class="topic" id="usereducer" data-group="core" data-kind="Hook">
+      <h2>How to use useReducer?</h2>
+      <p><code>useReducer</code> manages complex state logic. You <b>dispatch</b> an action, and a <b>reducer</b> function decides the new state.</p>
+      <ul>
+        <li><code>useState</code> for simple state.</li>
+        <li><code>useReducer</code> for complex state with multiple actions.</li>
+      </ul>
+      <p>Real-life example: a shopping cart with <code>ADD_ITEM</code>, <code>REMOVE_ITEM</code>, <code>CLEAR_CART</code> and <code>UPDATE_QUANTITY</code>. Instead of many <code>useState</code> calls, one reducer handles every action.</p>
+
+      <script type="text/plain" data-code data-title="syntax">
+const [state, dispatch] = useReducer(reducer, initialState);
+
+function reducer(state, action) {
+  // logic
+  return newState;
+}
+
+dispatch({ type: "ADD_ITEM" });
+dispatch({ type: "REMOVE_ITEM" });
+dispatch({ type: "CLEAR_CART" });
+      </script>
+      <ul>
+        <li><code>state</code>: the current state.</li>
+        <li><code>dispatch</code>: sends an instruction (action).</li>
+        <li><code>reducer</code>: the function that decides how state changes.</li>
+        <li><code>initialState</code>: the starting value.</li>
+      </ul>
+      <div class="note tip"><p>Remember what the reducer returns: <code>return state + 1;</code> gives a number, <code>return { count: state + 1 };</code> gives an object. It must return the same kind of thing as the initial state.</p></div>
+
+      <h4>Example 1: simplest reducer</h4>
+      <script type="text/plain" data-code data-title="App.jsx">
+import { useReducer } from "react";
+
+const reducer = (state, action) => {
+  return state + 1;
+};
+
+function App() {
+  const [count, dispatch] = useReducer(reducer, 0);
+
+  return (
+    <div>
+      <h1>Use Reducer Hook</h1>
+      <div>{count}</div>
+      <button onClick={() => dispatch()}>Increment</button>
+    </div>
+  );
+}
+
+export default App;
+      </script>
+
+      <h4>Example 2: using action.type</h4>
+      <script type="text/plain" data-code data-title="App.jsx">
+import { useReducer } from "react";
+
+const reducer = (state, action) => {
+  if (action.type === "increment") {
+    return state + 1;
+  }
+  if (action.type === "decrement") {
+    return state - 1;
+  }
+  return state;
+};
+
+function App() {
+  const [count, dispatch] = useReducer(reducer, 0);
+
+  return (
+    <div>
+      <h1>Use Reducer Hook</h1>
+      <div>{count}</div>
+      <button onClick={() => dispatch({ type: "increment" })}>Increment</button>
+      <button onClick={() => dispatch({ type: "decrement" })}>Decrement</button>
+    </div>
+  );
+}
+
+export default App;
+      </script>
+
+      <h4>Example 3: multiple form fields with one reducer</h4>
+      <script type="text/plain" data-code data-title="App.jsx">
+import { useReducer } from "react";
+
+const emptyData = {
+  username: "",
+  password: "",
+  email: "",
+  city: "",
+  address: "",
+};
+
+// action.type holds the field name, action.payload holds the new value
+const reducer = (data, action) => {
+  return {
+    ...data,
+    [action.type]: action.payload,
+  };
+};
+
+function App() {
+  const [state, dispatch] = useReducer(reducer, emptyData);
+
+  return (
+    <div>
+      <h1>Use Reducer Hook</h1>
+      <form onSubmit={(e) => e.preventDefault()}>
+        <input
+          type="text"
+          placeholder="User Name"
+          onChange={(e) => dispatch({ type: "username", payload: e.target.value })}
+        />
+        <br /><br />
+        <input
+          type="password"
+          placeholder="Password"
+          onChange={(e) => dispatch({ type: "password", payload: e.target.value })}
+        />
+        <br /><br />
+        <input
+          type="text"
+          placeholder="Email"
+          onChange={(e) => dispatch({ type: "email", payload: e.target.value })}
+        />
+        <br /><br />
+        <input
+          type="text"
+          placeholder="City"
+          onChange={(e) => dispatch({ type: "city", payload: e.target.value })}
+        />
+        <br /><br />
+        <input
+          type="text"
+          placeholder="Address"
+          onChange={(e) => dispatch({ type: "address", payload: e.target.value })}
+        />
+      </form>
+
+      <p>User Name: {state.username}</p>
+      <p>Password: {state.password}</p>
+      <p>Email: {state.email}</p>
+      <p>City: {state.city}</p>
+      <p>Address: {state.address}</p>
+      <button onClick={() => console.log(state)}>Submit</button>
+    </div>
+  );
+}
+
+export default App;
+      </script>
+
+      <h4>Example 4: increment, decrement and typed input</h4>
+      <script type="text/plain" data-code data-title="App.jsx">
+import { useReducer } from "react";
+
+const reducer = (currentState, action) => {
+  if (action.type === "increment") {
+    return currentState + 1;
+  }
+  if (action.type === "decrement") {
+    return currentState - 1;
+  }
+  if (action.type === "input") {
+    return Number(action.payload);
+  }
+  return currentState;
+};
+
+const App = () => {
+  const [state, dispatch] = useReducer(reducer, 0);
+
+  return (
+    <div>
+      <h1>useReducer Hook</h1>
+      <h3>{state}</h3>
+      <button onClick={() => dispatch({ type: "increment" })}>Increment</button>
+      <button onClick={() => dispatch({ type: "decrement" })}>Decrease</button>
+      <br /><br />
+      <input
+        type="number"
+        value={state}
+        onChange={(e) => dispatch({ type: "input", payload: e.target.value })}
+      />
+    </div>
+  );
+};
+
+export default App;
+      </script>
+    </section>
+
+    <section class="topic" id="nested" data-group="core" data-kind="State">
+      <h2>How to update nested objects in state?</h2>
+      <p>Never change state directly. Copy each level with the spread operator (<code>...</code>) and then change only what you need. Every level you touch needs its own spread.</p>
+      <h4>Update many values at once</h4>
+      <script type="text/plain" data-code data-title="App.jsx">
+import { useState } from "react";
+
+function App() {
+  const [data, setData] = useState({
+    firstName: "John",
+    address: {
+      city: "Pune",
+      country: "India",
+    },
+  });
+
+  const updateValues = () => {
+    setData((prev) => ({
+      ...prev,                  // copy the outer object
+      firstName: "Ketan",
+      address: {
+        ...prev.address,        // copy the inner object
+        city: "Mumbai",
+        country: "Canada",
+      },
+    }));
+  };
+
+  return (
+    <div>
+      <h1>Updating Objects in State</h1>
+      <h3>Name: {data.firstName}</h3>
+      <h3>City: {data.address.city}</h3>
+      <h3>Country: {data.address.country}</h3>
+      <button onClick={updateValues}>Update Values</button>
+    </div>
+  );
+}
+
+export default App;
+      </script>
+      <h4>Update one field from an input</h4>
+      <script type="text/plain" data-code data-title="App.jsx">
+import { useState } from "react";
+
+const App = () => {
+  const [data, setData] = useState({
+    firstName: "Thomas",
+    address: { city: "Pune", country: "India" },
+  });
+
+  const handleName = (val) => {
+    setData({ ...data, firstName: val });
+  };
+
+  const handleCity = (city) => {
+    setData({ ...data, address: { ...data.address, city } });
+  };
+
+  const handleCountry = (country) => {
+    setData({ ...data, address: { ...data.address, country } });
+  };
+
+  return (
+    <div>
+      <h1>Updating Objects Using State</h1>
+      <input type="text" onChange={(e) => handleName(e.target.value)} />
+      <h3>First Name: {data.firstName}</h3>
+      <input type="text" onChange={(e) => handleCity(e.target.value)} />
+      <h3>City: {data.address.city}</h3>
+      <input type="text" onChange={(e) => handleCountry(e.target.value)} />
+      <h3>Country: {data.address.country}</h3>
+    </div>
+  );
+};
+
+export default App;
+      </script>
+    </section>
+
+    <section class="topic" id="layouteffect" data-group="core" data-kind="Hook">
+      <h2>useEffect vs useLayoutEffect: what is the difference?</h2>
+      <p><code>useLayoutEffect</code> runs first, before the browser paints the screen. <code>useEffect</code> runs second, after the UI is on screen. Open the console and check the order.</p>
+      <script type="text/plain" data-code data-title="App.jsx">
+import { useEffect, useLayoutEffect } from "react";
+
+const App = () => {
+  // executes second: after the UI is mounted and painted
+  useEffect(() => {
+    console.log("Message from useEffect Hook");
+  });
+
+  // executes first: before the UI is painted
+  useLayoutEffect(() => {
+    console.log("Message from useLayoutEffect");
+  });
+
+  return (
+    <div>
+      <h2>Test Msg</h2>
+    </div>
+  );
+};
+
+export default App;
+      </script>
+      <div class="note tip"><p>Use <code>useEffect</code> almost always (API calls, timers, listeners). Use <code>useLayoutEffect</code> only when you must measure or move a DOM element before the user sees it, to avoid a flicker.</p></div>
+    </section>
+
+    <!-- =====================================================
+         DAILY PATTERNS
+         ===================================================== -->
+
+    <section class="topic" id="setup" data-group="daily" data-kind="Pattern">
+      <h2>How to create a React project and organize folders?</h2>
+      <script type="text/plain" data-code data-lang="plain" data-title="terminal">
+npm create vite@latest my-app -- --template react
+cd my-app
+npm install
+npm run dev
+
+# packages you will often add
+npm install react-router-dom axios
+      </script>
+      <script type="text/plain" data-code data-lang="plain" data-title="folder structure">
+src/
+  components/   Signup.jsx, Login.jsx, Dashboard.jsx, Header.jsx
+  context/      AppContext.jsx
+  hooks/        useFetch.jsx, useDebounce.jsx
+  App.jsx       main component, decides what to show
+  main.jsx      starts the app
+      </script>
+      <div class="note tip"><p>Component file names start with a capital letter (<code>Login.jsx</code>), and so do the component names. Hooks start with <code>use</code>.</p></div>
+    </section>
+
+    <section class="topic" id="props" data-group="daily" data-kind="Pattern">
+      <h2>How to pass data between components (props, children, lifting state up)?</h2>
+      <p>Data flows down by props. When two components need the same data, keep the state in their common parent and pass down the value and the function that changes it.</p>
+      <script type="text/plain" data-code data-title="Props.jsx">
+import { useState } from "react";
+
+// children: whatever is written between the opening and closing tag
+function Card({ title, children }) {
+  return (
+    <div className="card">
+      <h3>{title}</h3>
+      {children}
+    </div>
+  );
+}
+
+// child gets the value and the function from its parent
+function NameInput({ name, onChange }) {
+  return <input value={name} onChange={(e) => onChange(e.target.value)} />;
+}
+
+// parent owns the state
+function Parent() {
+  const [name, setName] = useState("");
+
+  return (
+    <Card title="Greeting">
+      <NameInput name={name} onChange={setName} />
+      <p>Hello {name}</p>
+    </Card>
+  );
+}
+
+export default Parent;
+      </script>
+      <div class="note"><p>A child cannot send data up directly. It calls a function that the parent passed down (here <code>onChange</code>).</p></div>
+    </section>
+
+    <section class="topic" id="lists" data-group="daily" data-kind="Pattern">
+      <h2>How to show lists and handle loading, empty and error states?</h2>
+      <script type="text/plain" data-code data-title="List.jsx">
+const users = [
+  { id: 1, name: "Asha" },
+  { id: 2, name: "Ravi" },
+];
+
+function UserList() {
+  return (
+    <>
+      {users.length === 0 ? (
+        <p>No users found.</p>
+      ) : (
+        <ul>
+          {users.map((user) => (
+            <li key={user.id}>{user.name}</li>
+          ))}
+        </ul>
+      )}
+    </>
+  );
+}
+      </script>
+      <h4>Conditional rendering cheat</h4>
+      <script type="text/plain" data-code data-title="snippets">
+{isLoggedIn && <Dashboard />}                 // show or nothing
+{isLoggedIn ? <Dashboard /> : <Login />}      // this or that
+
+// early return at the top of a component
+if (loading) return <p>Loading...</p>;
+if (error) return <p style={{ color: "red" }}>{error}</p>;
+      </script>
+      <div class="note"><p>Always give <code>key</code> a unique id from your data. Use the array index only for lists that never add, remove or reorder items.</p></div>
+    </section>
+
+    <section class="topic" id="form" data-group="daily" data-kind="Pattern">
+      <h2>How to handle a form with one handleChange?</h2>
+      <p>Keep all fields in one object. Each input needs a <code>name</code> equal to its key in the object, and a <code>value</code> from state (a "controlled" input).</p>
+      <script type="text/plain" data-code data-title="Form.jsx">
+import { useState } from "react";
+
+function Form() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    agree: false,
+  });
+  const [error, setError] = useState("");
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+
+    setFormData({
+      ...formData,
+      [name]: type === "checkbox" ? checked : value,
+    });
+    setError(""); // clear the error while the user types
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault(); // stop the page reload
+    console.log(formData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input name="name" value={formData.name} onChange={handleChange} />
+      <input name="email" value={formData.email} onChange={handleChange} />
+      <input type="password" name="password" value={formData.password} onChange={handleChange} />
+      <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} />
+      <input type="checkbox" name="agree" checked={formData.agree} onChange={handleChange} />
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+
+export default Form;
+      </script>
+      <div class="note"><p>Use <code>checked</code> (not <code>value</code>) for checkboxes. For <code>select</code> and <code>textarea</code> the same <code>value</code> and <code>onChange</code> pattern works.</p></div>
+    </section>
+
+    <section class="topic" id="validation" data-group="daily" data-kind="Pattern">
+      <h2>How to validate a signup form?</h2>
+      <p>Write one <code>validate</code> function that returns an errors object. If the object is empty, the form is valid. This also lets you show an error under each field.</p>
+      <script type="text/plain" data-code data-title="validation.js">
+const validate = (values) => {
+  const errors = {};
+
+  // 1. all fields required
+  if (!values.name.trim()) errors.name = "Name is required.";
+  if (!values.email.trim()) errors.email = "Email is required.";
+
+  // 2. email format
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
+    errors.email = "Enter a valid email.";
+  }
+
+  // 3. password length
+  if (values.password.length < 6) {
+    errors.password = "Password must contain at least 6 characters.";
+  }
+
+  // 4. passwords must match
+  if (values.password !== values.confirmPassword) {
+    errors.confirmPassword = "Password and Confirm Password must match.";
+  }
+
+  return errors;
+};
+      </script>
+      <script type="text/plain" data-code data-title="Signup.jsx (submit)">
+const [errors, setErrors] = useState({});
+
+const handleSubmit = (e) => {
+  e.preventDefault();
+
+  const newErrors = validate(formData);
+  setErrors(newErrors);
+  if (Object.keys(newErrors).length > 0) return; // stop if any error
+
+  // 5. block an existing email
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  const exists = users.some((u) => u.email === formData.email.trim().toLowerCase());
+  if (exists) {
+    setErrors({ email: "This email is already registered." });
+    return;
+  }
+
+  // 6. store the new user, then go to login
+  const newUser = {
+    name: formData.name.trim(),
+    email: formData.email.trim().toLowerCase(),
+    password: formData.password,
+  };
+  localStorage.setItem("users", JSON.stringify([...users, newUser]));
+  setPage("login");
+};
+
+// under each input
+{errors.email && <p style={{ color: "red" }}>{errors.email}</p>}
+      </script>
+    </section>
+
+    <section class="topic" id="search-feature" data-group="daily" data-kind="Pattern">
+      <h2>How to make search functionality?</h2>
+      <p>Store only the text the user types. Compute the filtered list from it on every render. Lowercase both sides so "LAPTOP" finds "laptop".</p>
+      <script type="text/plain" data-code data-title="SearchList.jsx">
+import { useState } from "react";
+
+const products = [
+  { id: 1, name: "Laptop", category: "Electronics" },
+  { id: 2, name: "Phone", category: "Electronics" },
+  { id: 3, name: "Chair", category: "Furniture" },
+  { id: 4, name: "Desk", category: "Furniture" },
+];
+
+function SearchList() {
+  const [search, setSearch] = useState("");
+
+  const query = search.trim().toLowerCase();
+
+  const filtered = products.filter(
+    (item) =>
+      item.name.toLowerCase().includes(query) ||
+      item.category.toLowerCase().includes(query) // search in more than one field
+  );
+
+  return (
+    <div>
+      <input
+        type="text"
+        placeholder="Search product..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+
+      {filtered.length === 0 ? (
+        <p>No products found.</p>
+      ) : (
+        <ul>
+          {filtered.map((item) => (
+            <li key={item.id}>
+              {item.name} ({item.category})
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+export default SearchList;
+      </script>
+      <div class="note tip"><p>Do not store <code>filtered</code> in state. It is derived data: compute it from <code>search</code> and the original list. Two copies of the same data go out of sync.</p></div>
+    </section>
+
+    <section class="topic" id="debounce" data-group="daily" data-kind="Pattern">
+      <h2>How to search an API without a request on every key press (debounce)?</h2>
+      <p>A debounce waits until the user stops typing, then uses the final value. Write the hook once and reuse it.</p>
+      <script type="text/plain" data-code data-title="hooks/useDebounce.jsx">
+import { useState, useEffect } from "react";
+
+export function useDebounce(value, delay = 500) {
+  const [debounced, setDebounced] = useState(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer); // restart the wait on every key press
+  }, [value, delay]);
+
+  return debounced;
+}
+      </script>
+      <script type="text/plain" data-code data-title="ProductSearch.jsx">
+import { useState, useEffect } from "react";
+import { useDebounce } from "./hooks/useDebounce";
+
+function ProductSearch() {
+  const [search, setSearch] = useState("");
+  const [results, setResults] = useState([]);
+  const debouncedSearch = useDebounce(search, 500);
+
+  useEffect(() => {
+    if (!debouncedSearch.trim()) {
+      setResults([]);
+      return;
+    }
+
+    const load = async () => {
+      try {
+        const res = await fetch(
+          `https://dummyjson.com/products/search?q=${encodeURIComponent(debouncedSearch)}`
+        );
+        if (!res.ok) throw new Error("Request failed");
+        const data = await res.json();
+        setResults(data.products);
+      } catch (err) {
+        console.error(err.message);
+      }
+    };
+
+    load();
+  }, [debouncedSearch]); // API runs only after typing stops
+
+  return (
+    <div>
+      <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search products..." />
+      <ul>
+        {results.map((p) => (
+          <li key={p.id}>{p.title}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+      </script>
+    </section>
+
+    <section class="topic" id="fetch" data-group="daily" data-kind="Pattern">
+      <h2>How to get API data using try / catch (loading and error states)?</h2>
+      <p>Three states are needed for every API call: the data, <code>loading</code> and <code>error</code>. Wrap the request in <code>try / catch / finally</code>.</p>
+      <script type="text/plain" data-code data-title="Users.jsx">
+import { useState, useEffect } from "react";
+
+function Users() {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    // the useEffect callback cannot be async, so create an inner function
+    const getUsers = async () => {
+      try {
+        const res = await fetch("https://jsonplaceholder.typicode.com/users");
+
+        if (!res.ok) {
+          throw new Error("Request failed: " + res.status);
+        }
+
+        const data = await res.json();
+        setUsers(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false); // runs on success AND on failure
+      }
+    };
+
+    getUsers();
+  }, []);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
+
+  return (
+    <ul>
+      {users.map((user) => (
+        <li key={user.id}>
+          {user.name} - {user.email}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export default Users;
+      </script>
+      <div class="note"><p><code>fetch</code> does <b>not</b> throw an error for 404 or 500. Always check <code>res.ok</code> yourself, as above.</p></div>
+      <h4>Same thing with axios</h4>
+      <script type="text/plain" data-code data-title="axios version">
+import axios from "axios";
+
+const getUsers = async () => {
+  try {
+    const res = await axios.get("https://jsonplaceholder.typicode.com/users");
+    setUsers(res.data);              // data is already parsed in res.data
+  } catch (err) {
+    setError(err.message);           // axios throws on 4xx and 5xx automatically
+  } finally {
+    setLoading(false);
+  }
+};
+      </script>
+    </section>
+
+    <section class="topic" id="post" data-group="daily" data-kind="Pattern">
+      <h2>How to send data to an API (POST, PUT, DELETE)?</h2>
+      <script type="text/plain" data-code data-title="api calls">
+// POST: create
+const addPost = async () => {
+  try {
+    const res = await fetch("https://jsonplaceholder.typicode.com/posts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: "Hello", body: "My first post", userId: 1 }),
+    });
+    if (!res.ok) throw new Error("Could not save post");
+
+    const data = await res.json();
+    console.log("Saved:", data);
+  } catch (err) {
+    setError(err.message);
+  }
+};
+
+// PUT: update       fetch(url + "/" + id, { method: "PUT", headers, body })
+// DELETE: remove    fetch(url + "/" + id, { method: "DELETE" })
+      </script>
+      <div class="note tip"><p>After a successful POST or DELETE, update your state too (add the item to the array or filter it out) so the screen matches the server.</p></div>
+    </section>
+
+    <section class="topic" id="usefetch" data-group="daily" data-kind="Pattern">
+      <h2>How to make a reusable custom hook (useFetch)?</h2>
+      <p>If you copy the same fetch code in many components, move it into a custom hook. A custom hook is just a function that starts with <code>use</code> and calls other hooks.</p>
+      <script type="text/plain" data-code data-title="hooks/useFetch.jsx">
+import { useState, useEffect } from "react";
+
+function useFetch(url) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const load = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(url, { signal: controller.signal });
+        if (!res.ok) throw new Error("Request failed: " + res.status);
+
+        setData(await res.json());
+        setError("");
+      } catch (err) {
+        if (err.name !== "AbortError") setError(err.message);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    };
+
+    load();
+    return () => controller.abort(); // cancel when the url changes or the component is removed
+  }, [url]);
+
+  return { data, loading, error };
+}
+
+export default useFetch;
+      </script>
+      <script type="text/plain" data-code data-title="Users.jsx (using it)">
+import useFetch from "./hooks/useFetch";
+
+function Users() {
+  const { data: users, loading, error } = useFetch("https://jsonplaceholder.typicode.com/users");
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
+
+  return (
+    <ul>
+      {users.map((u) => (
+        <li key={u.id}>{u.name}</li>
+      ))}
+    </ul>
+  );
+}
+      </script>
+    </section>
+
+    <section class="topic" id="pagination" data-group="daily" data-kind="Pattern">
+      <h2>How to make pagination?</h2>
+      <p>Keep only the current <code>page</code> number in state. The visible items come from <code>slice</code>, and the page count from <code>Math.ceil</code>.</p>
+      <script type="text/plain" data-code data-title="PaginatedList.jsx">
+import { useState } from "react";
+
+function PaginatedList({ items }) {
+  const [page, setPage] = useState(1);
+  const perPage = 5;
+
+  const totalPages = Math.ceil(items.length / perPage);
+  const start = (page - 1) * perPage;
+  const currentItems = items.slice(start, start + perPage);
+
+  return (
+    <div>
+      <ul>
+        {currentItems.map((item) => (
+          <li key={item.id}>{item.name}</li>
+        ))}
+      </ul>
+
+      <button onClick={() => setPage((p) => p - 1)} disabled={page === 1}>
+        Prev
+      </button>
+
+      {/* page number buttons */}
+      {Array.from({ length: totalPages }, (_, i) => (
+        <button
+          key={i}
+          onClick={() => setPage(i + 1)}
+          style={{ fontWeight: page === i + 1 ? "bold" : "normal" }}
+        >
+          {i + 1}
+        </button>
+      ))}
+
+      <button onClick={() => setPage((p) => p + 1)} disabled={page >= totalPages}>
+        Next
+      </button>
+
+      <p>Page {page} of {totalPages}</p>
+    </div>
+  );
+}
+
+export default PaginatedList;
+      </script>
+      <div class="note"><p>Formula to remember: start = (page - 1) * perPage, end = start + perPage. When the search text or a filter changes, call <code>setPage(1)</code>, or the user may land on a page that no longer exists.</p></div>
+    </section>
+
+    <section class="topic" id="combined" data-group="daily" data-kind="Pattern">
+      <h2>How to combine search, filter, sort and pagination?</h2>
+      <p>The order matters: search, then filter, then sort, then paginate. Each step uses the output of the previous one.</p>
+      <script type="text/plain" data-code data-title="ProductTable.jsx">
+import { useState } from "react";
+
+function ProductTable({ products }) {
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("all");
+  const [sort, setSort] = useState("asc");
+  const [page, setPage] = useState(1);
+  const perPage = 5;
+
+  const result = products
+    .filter((p) => p.name.toLowerCase().includes(search.trim().toLowerCase()))
+    .filter((p) => category === "all" || p.category === category)
+    .sort((a, b) => (sort === "asc" ? a.price - b.price : b.price - a.price));
+
+  const totalPages = Math.ceil(result.length / perPage);
+  const visible = result.slice((page - 1) * perPage, page * perPage);
+
+  return (
+    <div>
+      <input
+        value={search}
+        placeholder="Search..."
+        onChange={(e) => {
+          setSearch(e.target.value);
+          setPage(1); // back to the first page
+        }}
+      />
+
+      <select
+        value={category}
+        onChange={(e) => {
+          setCategory(e.target.value);
+          setPage(1);
+        }}
+      >
+        <option value="all">All</option>
+        <option value="Electronics">Electronics</option>
+        <option value="Furniture">Furniture</option>
+      </select>
+
+      <select value={sort} onChange={(e) => setSort(e.target.value)}>
+        <option value="asc">Price: low to high</option>
+        <option value="desc">Price: high to low</option>
+      </select>
+
+      <ul>
+        {visible.map((p) => (
+          <li key={p.id}>{p.name} - Rs. {p.price}</li>
+        ))}
+      </ul>
+
+      <button onClick={() => setPage((p) => p - 1)} disabled={page === 1}>Prev</button>
+      <span> Page {page} of {totalPages} </span>
+      <button onClick={() => setPage((p) => p + 1)} disabled={page >= totalPages}>Next</button>
+    </div>
+  );
+}
+
+export default ProductTable;
+      </script>
+    </section>
+
+    <section class="topic" id="login" data-group="daily" data-kind="Pattern">
+      <h2>How to make signup, login, dashboard and logout?</h2>
+      <p>For a practice project: Signup saves users in <code>localStorage</code>, Login looks the user up with <code>find</code>, Dashboard shows the name, Logout clears it. <code>App.jsx</code> holds <code>page</code> and <code>loggedUser</code> and passes setters down as props.</p>
+      <h4>App.jsx</h4>
+      <script type="text/plain" data-code data-title="App.jsx">
+import { useState } from "react";
+import Signup from "./components/Signup";
+import Login from "./components/Login";
+import Dashboard from "./components/Dashboard";
+
+function App() {
+  const [page, setPage] = useState("signup");
+  const [loggedUser, setLoggedUser] = useState(null);
+
+  return (
+    <>
+      {page === "signup" && <Signup setPage={setPage} />}
+      {page === "login" && <Login setPage={setPage} setLoggedUser={setLoggedUser} />}
+      {page === "dashboard" && loggedUser && (
+        <Dashboard user={loggedUser} setPage={setPage} setLoggedUser={setLoggedUser} />
+      )}
+    </>
+  );
+}
+
+export default App;
+      </script>
+      <h4>Login.jsx</h4>
+      <script type="text/plain" data-code data-title="components/Login.jsx">
+import { useState } from "react";
+
+function Login({ setPage, setLoggedUser }) {
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    setError("");
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (!formData.email.trim() || !formData.password) {
+      setError("Email and password are required.");
+      return;
+    }
+
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+
+    // find returns the matching user object, or undefined
+    const foundUser = users.find(
+      (user) =>
+        user.email === formData.email.trim().toLowerCase() &&
+        user.password === formData.password
+    );
+
+    if (!foundUser) {
+      setError("Invalid email or password.");
+      return;
+    }
+
+    setLoggedUser(foundUser);
+    setPage("dashboard");
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <h2>Login</h2>
+      <input name="email" placeholder="Email" value={formData.email} onChange={handleChange} />
+      <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} />
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      <button type="submit">Login</button>
+
+      <p>
+        Do not have an account?{" "}
+        <button type="button" onClick={() => setPage("signup")}>Sign up</button>
+      </p>
+    </form>
+  );
+}
+
+export default Login;
+      </script>
+      <h4>Dashboard.jsx</h4>
+      <script type="text/plain" data-code data-title="components/Dashboard.jsx">
+function Dashboard({ user, setPage, setLoggedUser }) {
+  const handleLogout = () => {
+    setLoggedUser(null);
+    setPage("login");
+  };
+
+  return (
+    <div>
+      <h2>Welcome, {user.name}</h2>
+      <button onClick={handleLogout}>Logout</button>
+    </div>
+  );
+}
+
+export default Dashboard;
+      </script>
+      <div class="note"><p>Saving plain passwords in <code>localStorage</code> is for learning exercises only. In a real app the server checks the password (hashed) and returns a token. See the next section.</p></div>
+    </section>
+
+    <section class="topic" id="token-login" data-group="daily" data-kind="Pattern">
+      <h2>How to log in with a real API and token?</h2>
+      <script type="text/plain" data-code data-title="Login (API version)">
+const handleLogin = async (e) => {
+  e.preventDefault();
+  setError("");
+
+  try {
+    const res = await fetch("https://your-api.com/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: formData.email, password: formData.password }),
+    });
+
+    if (!res.ok) throw new Error("Invalid email or password");
+
+    const data = await res.json();
+    localStorage.setItem("token", data.token); // field name depends on your API
+    navigate("/dashboard");
+  } catch (err) {
+    setError(err.message);
+  }
+};
+
+// later, send the token with protected requests
+const token = localStorage.getItem("token");
+
+fetch("https://your-api.com/profile", {
+  headers: { Authorization: `Bearer ${token}` },
+});
+
+// logout
+localStorage.removeItem("token");
+navigate("/login");
+      </script>
+    </section>
+
+    <section class="topic" id="router" data-group="daily" data-kind="Pattern">
+      <h2>How to use React Router (pages, links, protected routes)?</h2>
+      <p>React Router gives every page a real URL, a working back button and page refresh. Install it with <code>npm install react-router-dom</code>.</p>
+      <script type="text/plain" data-code data-title="main.jsx">
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import App from "./App";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <BrowserRouter>
+    <App />
+  </BrowserRouter>
+);
+      </script>
+      <script type="text/plain" data-code data-title="App.jsx">
+import { Routes, Route, Link, Navigate } from "react-router-dom";
+
+function ProtectedRoute({ children }) {
+  const token = localStorage.getItem("token");
+  return token ? children : <Navigate to="/login" replace />;
+}
+
+function App() {
+  return (
+    <>
+      <nav>
+        <Link to="/">Home</Link>
+        <Link to="/login">Login</Link>
+      </nav>
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/users/:id" element={<UserDetail />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<p>Page not found</p>} />
+      </Routes>
+    </>
+  );
+}
+
+export default App;
+      </script>
+      <script type="text/plain" data-code data-title="inside components">
+import { useNavigate, useParams } from "react-router-dom";
+
+const navigate = useNavigate();
+navigate("/dashboard");          // go to a page from code, for example after login
+
+const { id } = useParams();      // read :id from /users/:id
+      </script>
+      <div class="note"><p><code>Link</code> is for clickable links. <code>useNavigate</code> is for moving to another page after an action (login success, form saved). If a project uses a <code>page</code> state with <code>setPage</code> instead, do not use <code>Link</code>: use a button.</p></div>
+    </section>
+
+    <section class="topic" id="crud" data-group="daily" data-kind="Pattern">
+      <h2>How to add, delete and update items in a list (todo example)?</h2>
+      <p>Arrays in state are never changed directly. Make a new array every time.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Action</th><th>Write it as</th></tr></thead>
+          <tbody>
+            <tr><td>Add</td><td><code>[...todos, newItem]</code></td></tr>
+            <tr><td>Delete</td><td><code>todos.filter((t) =&gt; t.id !== id)</code></td></tr>
+            <tr><td>Update</td><td><code>todos.map((t) =&gt; t.id === id ? { ...t, done: true } : t)</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <script type="text/plain" data-code data-title="Todo.jsx">
+import { useState } from "react";
+
+function Todo() {
+  const [text, setText] = useState("");
+  const [todos, setTodos] = useState([]);
+
+  const addTodo = () => {
+    if (!text.trim()) return;
+    setTodos([...todos, { id: Date.now(), text: text.trim(), done: false }]);
+    setText("");
+  };
+
+  const deleteTodo = (id) => {
+    setTodos(todos.filter((t) => t.id !== id));
+  };
+
+  const toggleTodo = (id) => {
+    setTodos(todos.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+  };
+
+  const editTodo = (id, newText) => {
+    setTodos(todos.map((t) => (t.id === id ? { ...t, text: newText } : t)));
+  };
+
+  return (
+    <div>
+      <input value={text} onChange={(e) => setText(e.target.value)} placeholder="New task" />
+      <button onClick={addTodo}>Add</button>
+
+      <ul>
+        {todos.map((t) => (
+          <li key={t.id}>
+            <span
+              onClick={() => toggleTodo(t.id)}
+              style={{ textDecoration: t.done ? "line-through" : "none", cursor: "pointer" }}
+            >
+              {t.text}
+            </span>
+            <button onClick={() => deleteTodo(t.id)}>Delete</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default Todo;
+      </script>
+      <div class="note tip"><p>For edit, keep an <code>editingId</code> in state. Show an input for the item whose id matches, and call <code>editTodo</code> when the user saves.</p></div>
+    </section>
+
+    <section class="topic" id="storage" data-group="daily" data-kind="Pattern">
+      <h2>How to keep state after a page refresh (localStorage)?</h2>
+      <p><code>localStorage</code> stores only strings. Convert with <code>JSON.stringify</code> when saving and <code>JSON.parse</code> when reading.</p>
+      <script type="text/plain" data-code data-title="Todo.jsx (part)">
+import { useState, useEffect } from "react";
+
+// lazy initial value: the function runs only once, on the first render
+const [todos, setTodos] = useState(() => {
+  const saved = localStorage.getItem("todos");
+  return saved ? JSON.parse(saved) : [];
+});
+
+// save whenever todos changes
+useEffect(() => {
+  localStorage.setItem("todos", JSON.stringify(todos));
+}, [todos]);
+      </script>
+      <script type="text/plain" data-code data-lang="plain" data-title="localStorage methods">
+localStorage.setItem("key", "value");
+localStorage.getItem("key");        // null if missing
+localStorage.removeItem("key");
+localStorage.clear();               // removes everything
+      </script>
+    </section>
+
+    <section class="topic" id="toggle" data-group="daily" data-kind="Pattern">
+      <h2>How to show or hide something and make a dark mode toggle?</h2>
+      <script type="text/plain" data-code data-title="Toggle.jsx">
+import { useState } from "react";
+
+function Toggle() {
+  const [show, setShow] = useState(false);
+  const [dark, setDark] = useState(false);
+
+  return (
+    <div
+      style={{
+        background: dark ? "#111" : "#fff",
+        color: dark ? "#fff" : "#111",
+        padding: "20px",
+      }}
+    >
+      {/* show / hide */}
+      <button onClick={() => setShow(!show)}>
+        {show ? "Hide" : "Show"} details
+      </button>
+      {show && <p>Here are the details.</p>}
+
+      {/* dark mode */}
+      <button onClick={() => setDark((prev) => !prev)}>Toggle theme</button>
+    </div>
+  );
+}
+
+export default Toggle;
+      </script>
+      <div class="note tip"><p>For a toggle, flip the boolean: <code>setValue(!value)</code> or <code>setValue((prev) =&gt; !prev)</code>.</p></div>
+    </section>
+
+        <section class="topic" id="reusable-input" data-group="more" data-kind="Pattern">
+      <h2>How to make a reusable Input component?</h2>
+      <p>Write the label, input and error message once. <code>...props</code> passes every other attribute (name, value, onChange, type, placeholder) straight to the <code>input</code>.</p>
+      <script type="text/plain" data-code data-title="components/Input.jsx">
+function Input({ label, error, ...props }) {
+  return (
+    <div style={{ marginBottom: "14px" }}>
+      <label>{label}</label>
+      <br />
+      <input {...props} />
+      {error && <p style={{ color: "red", margin: 0 }}>{error}</p>}
+    </div>
+  );
+}
+
+export default Input;
+      </script>
+      <script type="text/plain" data-code data-title="using it">
+<Input
+  label="Email"
+  type="text"
+  name="email"
+  placeholder="Enter email"
+  value={formData.email}
+  onChange={handleChange}
+  error={errors.email}
+/>
+      </script>
+    </section>
+
+    <section class="topic" id="submit-state" data-group="more" data-kind="Pattern">
+      <h2>How to show or hide a password and disable the button while submitting?</h2>
+      <p>A <code>loading</code> flag stops double clicks and tells the user something is happening.</p>
+      <script type="text/plain" data-code data-title="LoginForm.jsx">
+import { useState } from "react";
+
+function LoginForm() {
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      // replace this line with your real API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+    } finally {
+      setLoading(false); // always re-enable the button
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input type={showPassword ? "text" : "password"} placeholder="Password" />
+      <button type="button" onClick={() => setShowPassword(!showPassword)}>
+        {showPassword ? "Hide" : "Show"}
+      </button>
+
+      <button type="submit" disabled={loading}>
+        {loading ? "Please wait..." : "Login"}
+      </button>
+    </form>
+  );
+}
+
+export default LoginForm;
+      </script>
+    </section>
+
+    <section class="topic" id="auth-context" data-group="more" data-kind="Pattern">
+      <h2>How to keep login state in the whole app (AuthContext)?</h2>
+      <p>Put <code>user</code>, <code>login</code> and <code>logout</code> in a context so any component can read them. The lazy initial value reads <code>localStorage</code>, so the user stays logged in after a refresh.</p>
+      <script type="text/plain" data-code data-title="context/AuthContext.jsx">
+import { createContext, useContext, useState } from "react";
+
+const AuthContext = createContext();
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem("user");
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const login = (userData) => {
+    setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
+  };
+
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem("user");
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+// custom hook: write useAuth() instead of useContext(AuthContext)
+export const useAuth = () => useContext(AuthContext);
+      </script>
+      <script type="text/plain" data-code data-title="main.jsx">
+import { AuthProvider } from "./context/AuthContext";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <AuthProvider>
+    <App />
+  </AuthProvider>
+);
+      </script>
+      <script type="text/plain" data-code data-title="anywhere in the app">
+import { useAuth } from "./context/AuthContext";
+
+function Dashboard() {
+  const { user, logout } = useAuth();
+
+  if (!user) return <p>Please login first.</p>;
+
+  return (
+    <div>
+      <h2>Welcome, {user.name}</h2>
+      <button onClick={logout}>Logout</button>
+    </div>
+  );
+}
+      </script>
+      <div class="note tip"><p>Do the same for a theme (dark/light) context: store <code>theme</code> and a <code>toggleTheme</code> function.</p></div>
+    </section>
+
+    <section class="topic" id="cart" data-group="more" data-kind="Pattern">
+      <h2>How to make an add to cart with quantity and total?</h2>
+      <p>A cart has many actions (add, remove, increase, decrease, clear), which is a good fit for <code>useReducer</code>. The total and item count are calculated from the cart with <code>reduce</code>, not stored in state.</p>
+      <script type="text/plain" data-code data-title="Cart.jsx">
+import { useReducer } from "react";
+
+const cartReducer = (cart, action) => {
+  switch (action.type) {
+    case "ADD": {
+      const exists = cart.find((item) => item.id === action.item.id);
+      if (exists) {
+        return cart.map((item) =>
+          item.id === action.item.id ? { ...item, qty: item.qty + 1 } : item
+        );
+      }
+      return [...cart, { ...action.item, qty: 1 }];
+    }
+    case "INCREASE":
+      return cart.map((item) =>
+        item.id === action.id ? { ...item, qty: item.qty + 1 } : item
+      );
+    case "DECREASE":
+      return cart
+        .map((item) => (item.id === action.id ? { ...item, qty: item.qty - 1 } : item))
+        .filter((item) => item.qty > 0); // remove when quantity hits 0
+    case "REMOVE":
+      return cart.filter((item) => item.id !== action.id);
+    case "CLEAR":
+      return [];
+    default:
+      return cart;
+  }
+};
+
+const products = [
+  { id: 1, name: "Laptop", price: 50000 },
+  { id: 2, name: "Phone", price: 20000 },
+];
+
+function Cart() {
+  const [cart, dispatch] = useReducer(cartReducer, []);
+
+  const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+
+  return (
+    <div>
+      {products.map((p) => (
+        <div key={p.id}>
+          {p.name} - Rs. {p.price}
+          <button onClick={() => dispatch({ type: "ADD", item: p })}>Add to cart</button>
+        </div>
+      ))}
+
+      <h3>Cart ({totalItems})</h3>
+      {cart.map((item) => (
+        <div key={item.id}>
+          {item.name} x {item.qty}
+          <button onClick={() => dispatch({ type: "DECREASE", id: item.id })}>-</button>
+          <button onClick={() => dispatch({ type: "INCREASE", id: item.id })}>+</button>
+          <button onClick={() => dispatch({ type: "REMOVE", id: item.id })}>Remove</button>
+        </div>
+      ))}
+
+      <h3>Total: Rs. {total}</h3>
+      <button onClick={() => dispatch({ type: "CLEAR" })}>Clear cart</button>
+    </div>
+  );
+}
+
+export default Cart;
+      </script>
+    </section>
+
+    <section class="topic" id="modal" data-group="more" data-kind="Pattern">
+      <h2>How to make a modal (popup) with confirm delete?</h2>
+      <p>One boolean (<code>open</code>) controls it. Clicking the dark overlay closes it, and <code>stopPropagation</code> stops clicks inside the box from closing it. The Escape key also closes it.</p>
+      <script type="text/plain" data-code data-title="Modal.jsx">
+import { useState, useEffect } from "react";
+
+const overlay = {
+  position: "fixed",
+  inset: 0,
+  background: "rgba(0, 0, 0, 0.5)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+};
+
+const box = {
+  background: "#fff",
+  color: "#111",
+  padding: "20px",
+  borderRadius: "8px",
+  minWidth: "300px",
+};
+
+function Modal({ open, onClose, title, children }) {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  return (
+    <div style={overlay} onClick={onClose}>
+      <div style={box} onClick={(e) => e.stopPropagation()}>
+        <h3>{title}</h3>
+        {children}
+        <button onClick={onClose}>Close</button>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [open, setOpen] = useState(false);
+
+  const handleDelete = () => {
+    // delete the item here
+    setOpen(false);
+  };
+
+  return (
+    <>
+      <button onClick={() => setOpen(true)}>Delete item</button>
+
+      <Modal open={open} onClose={() => setOpen(false)} title="Are you sure?">
+        <p>This cannot be undone.</p>
+        <button onClick={handleDelete}>Yes, delete</button>
+      </Modal>
+    </>
+  );
+}
+
+export default App;
+      </script>
+      <div class="note tip"><p>For a simple confirm without a modal, <code>if (window.confirm("Delete this item?")) { deleteItem(); }</code> works too.</p></div>
+    </section>
+
+    <section class="topic" id="tabs-accordion" data-group="more" data-kind="Pattern">
+      <h2>How to make tabs and an accordion (FAQ)?</h2>
+      <p>Both store only one thing: which tab id (or index) is open right now.</p>
+      <script type="text/plain" data-code data-title="Tabs.jsx">
+import { useState } from "react";
+
+function Tabs() {
+  const tabs = [
+    { id: "profile", label: "Profile", content: "Profile details" },
+    { id: "orders", label: "Orders", content: "Your orders" },
+    { id: "settings", label: "Settings", content: "Settings page" },
+  ];
+
+  const [active, setActive] = useState("profile");
+
+  return (
+    <div>
+      {tabs.map((tab) => (
+        <button
+          key={tab.id}
+          onClick={() => setActive(tab.id)}
+          style={{ fontWeight: active === tab.id ? "bold" : "normal" }}
+        >
+          {tab.label}
+        </button>
+      ))}
+
+      <p>{tabs.find((tab) => tab.id === active).content}</p>
+    </div>
+  );
+}
+
+export default Tabs;
+      </script>
+      <script type="text/plain" data-code data-title="Accordion.jsx">
+import { useState } from "react";
+
+function Accordion({ items }) {
+  const [openIndex, setOpenIndex] = useState(null); // null = all closed
+
+  return (
+    <div>
+      {items.map((item, i) => (
+        <div key={item.id}>
+          <button onClick={() => setOpenIndex(openIndex === i ? null : i)}>
+            {item.question}
+          </button>
+          {openIndex === i && <p>{item.answer}</p>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default Accordion;
+      </script>
+    </section>
+
+    <section class="topic" id="load-more" data-group="more" data-kind="Pattern">
+      <h2>How to make a Load more button?</h2>
+      <p>The simplest alternative to pagination: show the first few items and add more on click.</p>
+      <script type="text/plain" data-code data-title="LoadMoreList.jsx">
+import { useState } from "react";
+
+function LoadMoreList({ items }) {
+  const [visibleCount, setVisibleCount] = useState(6);
+
+  const visible = items.slice(0, visibleCount);
+
+  return (
+    <div>
+      <ul>
+        {visible.map((item) => (
+          <li key={item.id}>{item.name}</li>
+        ))}
+      </ul>
+
+      {visibleCount < items.length && (
+        <button onClick={() => setVisibleCount((c) => c + 6)}>Load more</button>
+      )}
+    </div>
+  );
+}
+
+export default LoadMoreList;
+      </script>
+    </section>
+
+    <section class="topic" id="checkbox" data-group="more" data-kind="Pattern">
+      <h2>How to select multiple items with a Select all checkbox?</h2>
+      <p>Keep an array of selected ids. Select all is true only when every item is selected.</p>
+      <script type="text/plain" data-code data-title="SelectList.jsx">
+import { useState } from "react";
+
+function SelectList({ items }) {
+  const [selected, setSelected] = useState([]);
+
+  const toggleOne = (id) => {
+    setSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const allSelected = items.length > 0 && selected.length === items.length;
+
+  const toggleAll = () => {
+    setSelected(allSelected ? [] : items.map((item) => item.id));
+  };
+
+  return (
+    <div>
+      <label>
+        <input type="checkbox" checked={allSelected} onChange={toggleAll} />
+        Select all
+      </label>
+
+      {items.map((item) => (
+        <label key={item.id} style={{ display: "block" }}>
+          <input
+            type="checkbox"
+            checked={selected.includes(item.id)}
+            onChange={() => toggleOne(item.id)}
+          />
+          {item.name}
+        </label>
+      ))}
+
+      <button disabled={selected.length === 0}>
+        Delete selected ({selected.length})
+      </button>
+    </div>
+  );
+}
+
+export default SelectList;
+      </script>
+    </section>
+
+    <section class="topic" id="events" data-group="more" data-kind="Pattern">
+      <h2>How to close a dropdown on outside click and detect screen size?</h2>
+      <p>Add the listener in <code>useEffect</code> and always remove it in the cleanup function.</p>
+      <script type="text/plain" data-code data-title="Dropdown.jsx">
+import { useState, useRef, useEffect } from "react";
+
+function Dropdown() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      // if the click is outside the dropdown, close it
+      if (ref.current && !ref.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  return (
+    <div ref={ref}>
+      <button onClick={() => setOpen(!open)}>Menu</button>
+      {open && (
+        <ul>
+          <li>Profile</li>
+          <li>Settings</li>
+          <li>Logout</li>
+        </ul>
+      )}
+    </div>
+  );
+}
+
+export default Dropdown;
+      </script>
+      <script type="text/plain" data-code data-title="hooks/useScreenWidth.jsx">
+import { useState, useEffect } from "react";
+
+function useScreenWidth() {
+  const [width, setWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const onResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  return width;
+}
+
+export default useScreenWidth;
+
+// usage:  const isMobile = useScreenWidth() < 768;
+      </script>
+    </section>
+
+    <section class="topic" id="upload" data-group="more" data-kind="Pattern">
+      <h2>How to upload an image with preview?</h2>
+      <p>Read the file from <code>e.target.files[0]</code>, validate type and size, preview it with <code>URL.createObjectURL</code>, and send it as <code>FormData</code>.</p>
+      <script type="text/plain" data-code data-title="ImageUpload.jsx">
+import { useState } from "react";
+
+function ImageUpload() {
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState("");
+  const [error, setError] = useState("");
+
+  const handleFile = (e) => {
+    const selected = e.target.files[0];
+    if (!selected) return;
+
+    if (!selected.type.startsWith("image/")) {
+      setError("Please choose an image file.");
+      return;
+    }
+    if (selected.size > 2 * 1024 * 1024) {
+      setError("Image must be smaller than 2 MB.");
+      return;
+    }
+
+    setError("");
+    setFile(selected);
+    setPreview(URL.createObjectURL(selected));
+  };
+
+  const handleUpload = async () => {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      // do not set Content-Type yourself, the browser adds it for FormData
+      const res = await fetch("https://your-api.com/upload", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) throw new Error("Upload failed");
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  return (
+    <div>
+      <input type="file" accept="image/*" onChange={handleFile} />
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      {preview && <img src={preview} alt="preview" width="200" />}
+      <button onClick={handleUpload} disabled={!file}>Upload</button>
+    </div>
+  );
+}
+
+export default ImageUpload;
+      </script>
+    </section>
+
+    <section class="topic" id="api-setup" data-group="more" data-kind="Pattern">
+      <h2>How to set up env variables and an axios instance with a token?</h2>
+      <p>Keep the API URL in a <code>.env</code> file, and create one axios instance that adds the token to every request. Then every component just calls <code>api.get("/users")</code>.</p>
+      <script type="text/plain" data-code data-lang="plain" data-title=".env (project root, next to package.json)">
+VITE_API_URL=https://api.example.com
+      </script>
+      <script type="text/plain" data-code data-title="services/api.js">
+import axios from "axios";
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  timeout: 10000,
+});
+
+// attach the token to every request
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+// if the server says 401 (not logged in), log the user out
+api.interceptors.response.use(
+  (res) => res,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default api;
+      </script>
+      <script type="text/plain" data-code data-title="using it">
+import api from "./services/api";
+
+const res = await api.get("/users");              // GET  {VITE_API_URL}/users
+await api.post("/users", { name: "Asha" });       // POST with a JSON body
+await api.delete("/users/5");                     // DELETE
+      </script>
+      <div class="note"><p>In Vite only variables starting with <code>VITE_</code> are available, read as <code>import.meta.env.VITE_NAME</code>. Restart the dev server after changing <code>.env</code>. Never put secret keys in frontend code: anyone can read them in the browser.</p></div>
+    </section>
+
+    <section class="topic" id="detail-page" data-group="more" data-kind="Pattern">
+      <h2>How to open a detail page and fetch data by id (useParams)?</h2>
+      <p>The list page links to <code>/products/5</code>. The detail page reads <code>5</code> with <code>useParams</code> and fetches that item. Put <code>id</code> in the dependency array so it reloads if the id changes.</p>
+      <script type="text/plain" data-code data-title="App.jsx (route) + list link">
+<Route path="/products/:id" element={<ProductDetail />} />
+
+// in the list page
+<Link to={`/products/${product.id}`}>{product.title}</Link>
+      </script>
+      <script type="text/plain" data-code data-title="ProductDetail.jsx">
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+
+function ProductDetail() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`https://dummyjson.com/products/${id}`);
+        if (!res.ok) throw new Error("Product not found");
+        setProduct(await res.json());
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, [id]);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
+
+  return (
+    <div>
+      <button onClick={() => navigate(-1)}>Back</button>
+      <h2>{product.title}</h2>
+      <p>{product.description}</p>
+      <h3>Rs. {product.price}</h3>
+    </div>
+  );
+}
+
+export default ProductDetail;
+      </script>
+    </section>
+
+    <section class="topic" id="dependent-select" data-group="more" data-kind="Pattern">
+      <h2>How to make dependent dropdowns (country, then state)?</h2>
+      <p>The second dropdown is built from the first one's value. Reset the second one when the first changes.</p>
+      <script type="text/plain" data-code data-title="LocationSelect.jsx">
+import { useState } from "react";
+
+const data = {
+  India: ["Maharashtra", "Gujarat", "Karnataka"],
+  USA: ["Texas", "Ohio"],
+};
+
+function LocationSelect() {
+  const [country, setCountry] = useState("");
+  const [state, setState] = useState("");
+
+  return (
+    <div>
+      <select
+        value={country}
+        onChange={(e) => {
+          setCountry(e.target.value);
+          setState(""); // reset the second dropdown
+        }}
+      >
+        <option value="">Select country</option>
+        {Object.keys(data).map((c) => (
+          <option key={c} value={c}>{c}</option>
+        ))}
+      </select>
+
+      <select value={state} onChange={(e) => setState(e.target.value)} disabled={!country}>
+        <option value="">Select state</option>
+        {country &&
+          data[country].map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+      </select>
+    </div>
+  );
+}
+
+export default LocationSelect;
+      </script>
+    </section>
+
+    <section class="topic" id="timers" data-group="more" data-kind="Pattern">
+      <h2>How to make a resend OTP countdown and a message that disappears?</h2>
+      <script type="text/plain" data-code data-title="ResendOtp.jsx">
+import { useState, useEffect } from "react";
+
+function ResendOtp() {
+  const [seconds, setSeconds] = useState(30);
+
+  useEffect(() => {
+    if (seconds === 0) return;
+
+    const timer = setTimeout(() => setSeconds((s) => s - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [seconds]);
+
+  return (
+    <button disabled={seconds > 0} onClick={() => setSeconds(30)}>
+      {seconds > 0 ? `Resend OTP in ${seconds}s` : "Resend OTP"}
+    </button>
+  );
+}
+
+export default ResendOtp;
+      </script>
+      <script type="text/plain" data-code data-title="success message that hides after 3 seconds">
+const [message, setMessage] = useState("");
+
+const showMessage = (text) => {
+  setMessage(text);
+  setTimeout(() => setMessage(""), 3000);
+};
+
+// after a successful action
+showMessage("Saved successfully!");
+
+// in the JSX
+{message && <div className="toast">{message}</div>}
+      </script>
+      <div class="note tip"><p>For nicer popups with animation, install <code>react-toastify</code> and call <code>toast.success("Saved")</code>.</p></div>
+    </section>
+
+    <section class="topic" id="js-cheat" data-group="more" data-kind="JavaScript">
+      <h2>Which JavaScript array and object tricks do I use every day?</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Method</th><th>What it gives back</th></tr></thead>
+          <tbody>
+            <tr><td><code>map</code></td><td>new array, each item transformed (used to render lists)</td></tr>
+            <tr><td><code>filter</code></td><td>new array with only matching items (search, delete)</td></tr>
+            <tr><td><code>find</code></td><td>the first matching item, or <code>undefined</code> (login check)</td></tr>
+            <tr><td><code>some</code> / <code>every</code></td><td><code>true</code> or <code>false</code> (duplicate email check)</td></tr>
+            <tr><td><code>reduce</code></td><td>one value from the whole array (cart total)</td></tr>
+            <tr><td><code>includes</code></td><td><code>true</code> if the value is in the array or string</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <script type="text/plain" data-code data-title="examples">
+const prices = [100, 250, 400];
+
+prices.map((p) => p * 2);                // [200, 500, 800]
+prices.filter((p) => p > 150);           // [250, 400]
+prices.find((p) => p > 150);             // 250 (first match only)
+prices.some((p) => p > 300);             // true
+prices.every((p) => p > 50);             // true
+prices.reduce((sum, p) => sum + p, 0);   // 750
+prices.includes(250);                    // true
+[...prices].sort((a, b) => b - a);       // [400, 250, 100] (copy first: sort changes the array)
+
+const user = { name: "Asha", address: { city: "Pune" } };
+
+const { name, address } = user;              // destructuring
+const copy = { ...user, name: "Ravi" };      // copy and change one field
+const moreItems = [...prices, 500];          // copy and add
+
+user?.address?.city;                         // safe access, no crash if address is missing
+const city = user.address?.city ?? "Unknown"; // fallback only for null or undefined
+      </script>
+    </section>
+
+    <section class="topic" id="format" data-group="more" data-kind="JavaScript">
+      <h2>How to format currency, numbers, dates and long text?</h2>
+      <script type="text/plain" data-code data-title="formatting">
+const price = 1234567.5;
+
+price.toLocaleString("en-IN");                                          // 12,34,567.5
+price.toLocaleString("en-IN", { style: "currency", currency: "INR" });  // ₹12,34,567.50
+
+const d = new Date("2026-10-10");
+d.toLocaleDateString("en-IN");                                          // 10/10/2026
+d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }); // 10 Oct 2026
+d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+
+// shorten long text
+const short = text.length > 50 ? text.slice(0, 50) + "..." : text;
+
+// capitalize first letter
+const title = word.charAt(0).toUpperCase() + word.slice(1);
+      </script>
+    </section>
+
+    <section class="topic" id="styling" data-group="more" data-kind="Pattern">
+      <h2>How to style components (inline, className, conditional class, CSS modules)?</h2>
+      <script type="text/plain" data-code data-title="styling">
+// inline style: double curly braces, camelCase names
+<div style={{ backgroundColor: "red", fontSize: "18px" }}>Hello</div>
+
+// className (not class) with a condition
+<button className={isActive ? "tab active" : "tab"}>Home</button>
+<button className={`btn ${loading ? "btn-disabled" : ""}`}>Save</button>
+
+// normal CSS file: import it once
+import "./App.css";
+
+// CSS module: class names are scoped to this component only
+import styles from "./Card.module.css";
+<div className={styles.card}>...</div>
+      </script>
+    </section>
+
+    <section class="topic" id="page-effects" data-group="more" data-kind="Pattern">
+      <h2>How to set the page title, scroll to top and lazy load pages?</h2>
+      <script type="text/plain" data-code data-title="page title">
+useEffect(() => {
+  document.title = "Dashboard | My App";
+}, []);
+      </script>
+      <script type="text/plain" data-code data-title="ScrollToTop.jsx (put it inside BrowserRouter)">
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]); // runs on every page change
+
+  return null;
+}
+
+export default ScrollToTop;
+      </script>
+      <script type="text/plain" data-code data-title="lazy loading pages (App.jsx)">
+import { lazy, Suspense } from "react";
+import { Routes, Route } from "react-router-dom";
+
+// the page code is downloaded only when the user opens it
+const Dashboard = lazy(() => import("./components/Dashboard"));
+const Settings = lazy(() => import("./components/Settings"));
+
+function App() {
+  return (
+    <Suspense fallback={<p>Loading page...</p>}>
+      <Routes>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/settings" element={<Settings />} />
+      </Routes>
+    </Suspense>
+  );
+}
+
+export default App;
+      </script>
+    </section>
+
+    <section class="topic" id="sortable-table" data-group="more" data-kind="Pattern">
+      <h2>How to make a sortable table (click a column header to sort)?</h2>
+      <p>Store two things: which column is sorted (<code>sortKey</code>) and the direction (<code>sortDir</code>). Clicking the same header flips the direction, clicking a new header starts at ascending. The arrow in the header shows the current state, and a checkbox column works as in the earlier Select all section.</p>
+      <script type="text/plain" data-code data-title="PatientTable.jsx">
+import { useState } from "react";
+
+const patients = [
+  { id: "P-101", name: "Asha Patil", age: 34, department: "Cardiology", date: "2026-10-12", status: "Scheduled" },
+  { id: "P-102", name: "Ravi Kumar", age: 52, department: "Orthopedics", date: "2026-10-09", status: "Completed" },
+  { id: "P-103", name: "Meera Shah", age: 27, department: "Dermatology", date: "2026-10-15", status: "Scheduled" },
+  { id: "P-104", name: "Imran Sheikh", age: 45, department: "Cardiology", date: "2026-10-11", status: "Cancelled" },
+];
+
+const columns = [
+  { key: "id", label: "Patient ID" },
+  { key: "name", label: "Name" },
+  { key: "age", label: "Age" },
+  { key: "department", label: "Department" },
+  { key: "date", label: "Appointment Date" },
+  { key: "status", label: "Status" },
+];
+
+function PatientTable() {
+  const [sortKey, setSortKey] = useState(null);
+  const [sortDir, setSortDir] = useState("asc");
+  const [selected, setSelected] = useState([]);
+
+  const handleSort = (key) => {
+    if (sortKey === key) {
+      setSortDir(sortDir === "asc" ? "desc" : "asc"); // same column: flip
+    } else {
+      setSortKey(key); // new column: start ascending
+      setSortDir("asc");
+    }
+  };
+
+  // copy the array first, because sort() changes the array it is called on
+  const sorted = [...patients].sort((a, b) => {
+    if (!sortKey) return 0;
+
+    const x = a[sortKey];
+    const y = b[sortKey];
+
+    const result =
+      typeof x === "number" ? x - y : String(x).localeCompare(String(y));
+
+    return sortDir === "asc" ? result : -result;
+  });
+
+  const allSelected = selected.length === patients.length;
+
+  const toggleAll = () => {
+    setSelected(allSelected ? [] : patients.map((p) => p.id));
+  };
+
+  const toggleOne = (id) => {
+    setSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const arrow = (key) => {
+    if (sortKey !== key) return "↕"; // not sorted by this column
+    return sortDir === "asc" ? "↑" : "↓";
+  };
+
+  return (
+    <table>
+      <thead>
+        <tr>
+          <th>
+            <input type="checkbox" checked={allSelected} onChange={toggleAll} />
+          </th>
+          {columns.map((col) => (
+            <th
+              key={col.key}
+              onClick={() => handleSort(col.key)}
+              style={{ cursor: "pointer" }}
+            >
+              {col.label} {arrow(col.key)}
+            </th>
+          ))}
+        </tr>
+      </thead>
+
+      <tbody>
+        {sorted.map((p) => (
+          <tr key={p.id}>
+            <td>
+              <input
+                type="checkbox"
+                checked={selected.includes(p.id)}
+                onChange={() => toggleOne(p.id)}
+              />
+            </td>
+            {columns.map((col) => (
+              <td key={col.key}>{p[col.key]}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+export default PatientTable;
+      </script>
+      <div class="note"><p>Numbers are sorted with <code>x - y</code>, text with <code>localeCompare</code>. Dates written as <code>2026-10-12</code> (year first) sort correctly as text. For other date formats, compare <code>new Date(x) - new Date(y)</code>.</p></div>
+      <div class="note tip"><p>With search and pagination, keep this order: search, filter, <b>sort</b>, then <code>slice</code> for the page. Otherwise only the visible page gets sorted. Call <code>setPage(1)</code> when the sort changes. Because <code>columns</code> is an array, adding a column means adding one line.</p></div>
+    </section>
+
+    <section class="topic" id="mistakes" data-group="more" data-kind="Checklist">
+      <h2>Which common React mistakes should I avoid?</h2>
+      <ul>
+        <li><b>Changing state directly.</b> <code>todos.push(x)</code> or <code>user.name = "A"</code> will not re-render. Use the setter with a new array or object.</li>
+        <li><b>Missing or bad <code>key</code></b> in <code>map</code>. Use a unique id, not a random number or (for changing lists) the index.</li>
+        <li><b>Hooks inside <code>if</code>, loops or normal functions.</b> Call hooks only at the top level of a component or custom hook.</li>
+        <li><b>Wrong dependency array.</b> Missing values give stale data. Setting state inside <code>useEffect</code> with no array causes an infinite loop.</li>
+        <li><b><code>async</code> directly on the <code>useEffect</code> callback.</b> Create an async function inside it and call it.</li>
+        <li><b>Calling the handler instead of passing it.</b> <code>onClick={handle()}</code> runs immediately. Write <code>onClick={handle}</code> or <code>onClick={() =&gt; handle(id)}</code>.</li>
+        <li><b>Forgetting <code>e.preventDefault()</code></b> in a form submit, so the page reloads.</li>
+        <li><b>Not cleaning up</b> timers, listeners or subscriptions in the <code>useEffect</code> return function.</li>
+        <li><b>Storing derived data in state</b> (like a filtered list). Compute it during render.</li>
+        <li><b>Forgetting <code>res.ok</code></b> after <code>fetch</code>.</li>
+      </ul>
+    </section>
+
+  </main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- tiny syntax highlighter (no libraries) ---------- */
+  var TOKEN = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|`(?:\\.|[^`\\])*`)|(<\/?[A-Za-z][\w.]*|\/>)|\b(import|from|export|default|const|let|var|function|return|if|else|new|async|await|try|catch|finally|throw|switch|case|break|true|false|null|undefined)\b|\b(\d+(?:\.\d+)?)\b|\b([A-Za-z_$][\w$]*)(?=\()/g;
+
+  function esc(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function highlight(text) {
+    var out = "", last = 0, m, cls;
+    TOKEN.lastIndex = 0;
+    while ((m = TOKEN.exec(text)) !== null) {
+      out += esc(text.slice(last, m.index));
+      cls = m[1] !== undefined ? "c" : m[2] !== undefined ? "s" : m[3] !== undefined ? "t" :
+            m[4] !== undefined ? "k" : m[5] !== undefined ? "n" : "f";
+      out += '<span class="tk-' + cls + '">' + esc(m[0]) + "</span>";
+      last = TOKEN.lastIndex;
+    }
+    return out + esc(text.slice(last));
+  }
+
+  function dedent(t) {
+    var lines = t.replace(/\r/g, "").split("\n");
+    while (lines.length && !lines[0].trim()) lines.shift();
+    while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
+    var ind = Math.min.apply(null, lines.filter(function (l) { return l.trim(); })
+      .map(function (l) { return l.match(/^ */)[0].length; }));
+    if (!isFinite(ind)) ind = 0;
+    return lines.map(function (l) { return l.slice(ind); }).join("\n");
+  }
+
+  function copyText(text, btn) {
+    function done() {
+      btn.textContent = "Copied";
+      setTimeout(function () { btn.textContent = "Copy"; }, 1500);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else { fallback(); }
+    function fallback() {
+      var ta = document.createElement("textarea");
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); done(); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+  }
+
+  /* ---------- turn <script data-code> into code blocks ---------- */
+  document.querySelectorAll("script[data-code]").forEach(function (s) {
+    var code = dedent(s.textContent);
+    var wrap = document.createElement("div");
+    wrap.className = "code";
+    wrap.innerHTML =
+      '<div class="code-head"><span></span><button type="button" class="copy">Copy</button></div>' +
+      "<pre><code></code></pre>";
+    wrap.querySelector(".code-head span").textContent = s.getAttribute("data-title") || "code";
+    wrap.querySelector("code").innerHTML =
+      s.getAttribute("data-lang") === "plain" ? esc(code) : highlight(code);
+    wrap.querySelector(".copy").addEventListener("click", function () { copyText(code, this); });
+    s.replaceWith(wrap);
+  });
+
+  /* ---------- chips + sidebar ---------- */
+  var sections = Array.prototype.slice.call(document.querySelectorAll(".topic"));
+  var groups = [
+    { key: "core", title: "Core hooks (my notes)" },
+    { key: "daily", title: "Daily patterns" },
+    { key: "more", title: "More daily patterns" }
+  ];
+  var side = document.getElementById("side");
+  var links = {};
+
+  side.innerHTML = '<div class="brand">React Notes</div>';
+  groups.forEach(function (g) {
+    var h = document.createElement("h3");
+    h.textContent = g.title;
+    side.appendChild(h);
+    sections.filter(function (s) { return s.dataset.group === g.key; }).forEach(function (s) {
+      var h2 = s.querySelector("h2");
+      var chip = document.createElement("span");
+      chip.className = "chip";
+      chip.textContent = s.dataset.kind;
+      h2.before(chip);
+
+      var a = document.createElement("a");
+      a.href = "#" + s.id;
+      a.textContent = h2.textContent;
+      a.addEventListener("click", function () { side.classList.remove("open"); });
+      side.appendChild(a);
+      links[s.id] = a;
+      s.dataset.search = s.textContent.toLowerCase();
+    });
+  });
+
+  /* ---------- active link while scrolling ---------- */
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) {
+          Object.keys(links).forEach(function (k) { links[k].classList.remove("active"); });
+          links[en.target.id].classList.add("active");
+        }
+      });
+    }, { rootMargin: "-20% 0px -70% 0px" });
+    sections.forEach(function (s) { io.observe(s); });
+  }
+
+  /* ---------- search ---------- */
+  var input = document.getElementById("search");
+  var count = document.getElementById("count");
+  var empty = document.getElementById("empty");
+
+  function runSearch() {
+    var terms = input.value.toLowerCase().split(/\s+/).filter(Boolean);
+    var shown = 0;
+    sections.forEach(function (s) {
+      var ok = terms.every(function (t) { return s.dataset.search.indexOf(t) !== -1; });
+      s.hidden = !ok;
+      links[s.id].hidden = !ok;
+      if (ok) shown++;
+    });
+    empty.hidden = shown !== 0;
+    count.textContent = terms.length
+      ? shown + " of " + sections.length + " sections match."
+      : sections.length + " sections.";
+  }
+  input.addEventListener("input", runSearch);
+  runSearch();
+
+  document.addEventListener("keydown", function (e) {
+    var tag = (document.activeElement || {}).tagName;
+    if (e.key === "/" && tag !== "INPUT" && tag !== "TEXTAREA") {
+      e.preventDefault();
+      input.focus();
+    }
+    if (e.key === "Escape" && document.activeElement === input) {
+      input.value = ""; runSearch(); input.blur();
+    }
+  });
+
+  /* ---------- mobile menu ---------- */
+  document.getElementById("menuBtn").addEventListener("click", function () {
+    side.classList.toggle("open");
+  });
+
+  /* ---------- theme ---------- */
+  var root = document.documentElement;
+  var themeBtn = document.getElementById("themeBtn");
+
+  function isDark() {
+    var t = root.getAttribute("data-theme");
+    if (t) return t === "dark";
+    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+  function paintBtn() { themeBtn.textContent = isDark() ? "Light mode" : "Dark mode"; }
+
+  try {
+    var saved = localStorage.getItem("cheatsheet-theme");
+    if (saved) root.setAttribute("data-theme", saved);
+  } catch (e) {}
+  paintBtn();
+
+  themeBtn.addEventListener("click", function () {
+    var next = isDark() ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("cheatsheet-theme", next); } catch (e) {}
+    paintBtn();
+  });
+})();
+</script>
+</body>
+</html>

@@ -2673,6 +2673,442 @@ export default PatientTable;
       </ul>
     </section>
 
+    <section class="topic" id="ternary" data-group="more" data-kind="JavaScript">
+      <h2>Ternary operator: how to use it in React</h2>
+      <p>The ternary operator is a short <code>if / else</code> that works inside JSX. The format is <code>condition ? valueIfTrue : valueIfFalse</code>. You can chain more than one ternary to check several conditions, and you can mix it with <code>&amp;&amp;</code> for boolean checks.</p>
+      <script type="text/plain" data-code data-title="greet.jsx (chained ternary)">
+const greet = ({ timeOfDay }) => {
+  return (
+    <div>
+      <h3>I am greet component</h3>
+      {
+        timeOfDay === 'morning' ? (
+          <h2>Good Morning</h2>
+        )
+        : timeOfDay === 'afternoon' ? (
+          <h2>Good Afternoon</h2>
+        )
+        : <h1>Add Greeting...</h1>
+      }
+    </div>
+  )
+}
+
+export default greet;
+      </script>
+      <div class="note"><p>Read it from top to bottom. If <code>timeOfDay</code> is <code>'morning'</code> it shows Good Morning, else if it is <code>'afternoon'</code> it shows Good Afternoon, else it shows the last value (<code>Add Greeting...</code>).</p></div>
+      <script type="text/plain" data-code data-title="UserStatus.jsx (ternary with &amp;&amp;)">
+const UserStatus = ({ loggedIn, isAdmin }) => {
+  return (
+    <div>
+      {loggedIn && isAdmin ? (
+        <h2>Welcome Admin</h2>
+      ) : loggedIn ? (
+        <h2>Welcome User</h2>
+      ) : (
+        <h2>Add Boolean Value</h2>
+      )}
+    </div>
+  );
+};
+
+export default UserStatus;
+      </script>
+      <div class="note tip"><p>Use a ternary when you need both an <b>if</b> and an <b>else</b> result. If you only need to show something when a condition is true, <code>{loggedIn &amp;&amp; &lt;h2&gt;Welcome&lt;/h2&gt;}</code> is shorter. Keep chains to two or three levels, and if it gets hard to read, move the logic into a normal <code>if</code> above the <code>return</code>.</p></div>
+    </section>
+
+    <section class="topic" id="local-storage" data-group="more" data-kind="Pattern">
+      <h2>Local Storage example: form with 4 fields</h2>
+      <p>Local storage keeps small data in the browser, so it is still there after a refresh or after closing the tab. It stores only text, so use <code>JSON.stringify</code> to save an object and <code>JSON.parse</code> to read it back. In this form, the 4 fields live in one state object. The initial value is read from local storage, and a <code>useEffect</code> saves it again every time the object changes.</p>
+      <script type="text/plain" data-code data-title="ProfileForm.jsx">
+import { useState, useEffect } from "react";
+
+const KEY = "profileForm";
+const empty = { name: "", email: "", phone: "", city: "" };
+
+// read once, when the component first loads
+const loadForm = () => {
+  try {
+    const saved = localStorage.getItem(KEY);
+    return saved ? JSON.parse(saved) : empty;
+  } catch (e) {
+    return empty; // broken or blocked storage
+  }
+};
+
+function ProfileForm() {
+  const [form, setForm] = useState(loadForm); // pass the function, do not call it
+
+  // save every time the form changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(form));
+    } catch (e) {}
+  }, [form]);
+
+  // one handler for all 4 inputs, the name attribute picks the key
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleClear = () => {
+    setForm(empty);
+    localStorage.removeItem(KEY);
+  };
+
+  return (
+    <form onSubmit={(e) => e.preventDefault()}>
+      <input name="name" placeholder="Name" value={form.name} onChange={handleChange} />
+      <input name="email" type="email" placeholder="Email" value={form.email} onChange={handleChange} />
+      <input name="phone" type="tel" placeholder="Phone" value={form.phone} onChange={handleChange} />
+      <input name="city" placeholder="City" value={form.city} onChange={handleChange} />
+
+      <button type="button" onClick={handleClear}>Clear</button>
+    </form>
+  );
+}
+
+export default ProfileForm;
+      </script>
+      <div class="note"><p><code>useState(loadForm)</code> passes the function so React runs it only on the first render. Writing <code>useState(loadForm())</code> would read local storage on every render. After <code>handleClear</code> runs, the <code>useEffect</code> saves the empty object again, so the key comes back with empty values. That is fine, but if you want the key gone, skip the <code>useEffect</code> save when the form is empty.</p></div>
+      <div class="note tip"><p>Check it in the browser: open DevTools, go to <b>Application</b>, then <b>Local Storage</b>, and you will see the <code>profileForm</code> key update as you type. Never store passwords or tokens you must protect here, because any script on the page can read local storage.</p></div>
+    </section>
+
+    <section class="topic" id="local-storage-basic" data-group="more" data-kind="Pattern">
+      <h2>Local Storage basic example: save one name</h2>
+      <p>Start here if local storage is new to you. There are only three commands: <code>setItem("key", "value")</code> to save, <code>getItem("key")</code> to read, and <code>removeItem("key")</code> to delete. The value is always text. In this example, type a name, click Save, then refresh the page. The name is still there.</p>
+      <script type="text/plain" data-code data-title="SaveName.jsx">
+import { useState } from "react";
+
+function SaveName() {
+  // read the saved name when the page loads ("" if nothing is saved)
+  const [name, setName] = useState(localStorage.getItem("myName") || "");
+
+  const handleSave = () => {
+    localStorage.setItem("myName", name); // save
+    alert("Saved!");
+  };
+
+  const handleRemove = () => {
+    localStorage.removeItem("myName"); // delete
+    setName("");
+  };
+
+  return (
+    <div>
+      <input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Type your name"
+      />
+      <button onClick={handleSave}>Save</button>
+      <button onClick={handleRemove}>Remove</button>
+
+      <p>Hello, {name || "stranger"}</p>
+    </div>
+  );
+}
+
+export default SaveName;
+      </script>
+      <div class="note"><p>How it works: the typed text lives in state (<code>name</code>). Local storage is only updated when you click Save. On refresh, state is lost, so <code>useState</code> starts from <code>getItem</code> and the saved name comes back.</p></div>
+      <div class="note tip"><p>To save a number, array or object, convert it first with <code>JSON.stringify</code> and read it with <code>JSON.parse</code>. See the form example above.</p></div>
+    </section>
+
+    <section class="topic" id="react-icons" data-group="more" data-kind="Library">
+      <h2>How to add React Icons</h2>
+      <p>React Icons gives you thousands of ready-made icons as React components. Install it once, then import only the icons you need and use them like normal tags. Browse and search all icons at <a href="https://react-icons.github.io/react-icons/" target="_blank" rel="noopener">react-icons.github.io/react-icons</a>.</p>
+      <script type="text/plain" data-code data-lang="plain" data-title="terminal">
+npm install react-icons
+      </script>
+      <script type="text/plain" data-code data-title="App.jsx">
+// react icon link
+// https://react-icons.github.io/react-icons/
+
+import { FaShoppingCart } from "react-icons/fa";
+import { FaUserCheck } from "react-icons/fa";
+
+const App = () => {
+  return (
+    <div>
+      <h3>
+        <FaShoppingCart />
+      </h3>
+      <h3>
+        <FaUserCheck />
+      </h3>
+    </div>
+  );
+};
+
+export default App;
+      </script>
+      <div class="note"><p>The part after <code>react-icons/</code> is the icon pack: <code>fa</code> is Font Awesome, <code>md</code> is Material Design, and so on. The icon name must start with the same letters, like <code>Fa...</code> for <code>react-icons/fa</code>. Copy the exact name from the website.</p></div>
+      <div class="note tip"><p>You can import several icons from the same pack in one line: <code>import { FaShoppingCart, FaUserCheck } from "react-icons/fa";</code>. Icons take the text colour and size of their parent, or you can set <code>size</code> and <code>color</code> props, for example <code>&lt;FaShoppingCart size={30} color="teal" /&gt;</code>.</p></div>
+    </section>
+
+    <section class="topic" id="array-crud" data-group="more" data-kind="Pattern">
+      <h2>How to add, update and delete items in an array (state)</h2>
+      <p>Never change a state array directly (no <code>push</code>, no <code>splice</code>). Always give the setter a new array: spread to add, <code>map</code> to update, <code>filter</code> to delete.</p>
+      <script type="text/plain" data-code data-title="App.jsx">
+import { useState } from "react";
+
+const App = () => {
+  const [friends, setFriends] = useState(["Alex", "John"]);
+
+  // ADD: copy the old items, then put the new one at the end
+  const addFriend = () => {
+    setFriends([...friends, "Ketan"]);
+  };
+
+  // DELETE: keep everything except "John"
+  const removeFriend = () => {
+    setFriends(friends.filter((f) => f !== "John"));
+  };
+
+  // UPDATE: replace "Alex" with "Demo", keep the others as they are
+  const updateFriend = () => {
+    setFriends(friends.map((f) => (f === "Alex" ? "Demo" : f)));
+  };
+
+  return (
+    <div>
+      <ul>
+        {friends.map((f) => (
+          <li key={f}>{f}</li>
+        ))}
+      </ul>
+
+      <button onClick={addFriend}>Add Friend</button>
+      <button onClick={removeFriend}>Remove Friend</button>
+      <button onClick={updateFriend}>Update Friend</button>
+    </div>
+  );
+};
+
+export default App;
+      </script>
+      <table>
+        <thead><tr><th>Action</th><th>Method</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>Add</td><td><code>[...friends, "Ketan"]</code></td><td>Builds a new array with the extra item</td></tr>
+          <tr><td>Update</td><td><code>friends.map(...)</code></td><td>Returns a new array, changing only the matching item</td></tr>
+          <tr><td>Delete</td><td><code>friends.filter(...)</code></td><td>Returns a new array without the matching item</td></tr>
+        </tbody>
+      </table>
+      <div class="note"><p>Put the <code>key</code> on the <code>&lt;li&gt;</code> and render one <code>&lt;ul&gt;</code> around the whole list. A <code>&lt;ul&gt;</code> per item, or a list inside an <code>&lt;h1&gt;</code>, is invalid HTML.</p></div>
+      <div class="note tip"><p>Using the name as the key only works while names are unique. Clicking Add twice creates two "Ketan" items with the same key, which gives the duplicate key warning. For real apps store objects like <code>{ id: 1, name: "Alex" }</code>, use <code>key={f.id}</code> and filter or map by <code>id</code>.</p></div>
+    </section>
+
+    <section class="topic" id="array-methods" data-group="more" data-kind="JavaScript">
+      <h2>Array methods we use daily (map, filter, reduce and more)</h2>
+      <p>Most React code is array work: show a list, search it, sort it, count it, add or remove an item. These are the methods you will use again and again. Most of them return a <b>new</b> value and leave the original array alone, which is exactly what React state needs.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Method</th><th>Returns</th><th>Where we use it</th></tr></thead>
+          <tbody>
+            <tr><td><code>map</code></td><td>New array, same length</td><td>Render a list in JSX, update one item in state, change every item</td></tr>
+            <tr><td><code>filter</code></td><td>New array, only matching items</td><td>Search box, delete an item, show only active or completed items</td></tr>
+            <tr><td><code>find</code></td><td>First matching item or <code>undefined</code></td><td>Get one record by id (product details, logged-in user)</td></tr>
+            <tr><td><code>findIndex</code></td><td>Position of first match or <code>-1</code></td><td>Know where an item is before updating or removing it</td></tr>
+            <tr><td><code>some</code></td><td><code>true</code> / <code>false</code></td><td>Is there at least one match? (any error, any item in the cart)</td></tr>
+            <tr><td><code>every</code></td><td><code>true</code> / <code>false</code></td><td>Do all items match? (all fields filled, all tasks done)</td></tr>
+            <tr><td><code>includes</code></td><td><code>true</code> / <code>false</code></td><td>Is this value in the array? (selected ids, allowed roles)</td></tr>
+            <tr><td><code>reduce</code></td><td>One value (number, object, anything)</td><td>Cart total, count by category, group by key</td></tr>
+            <tr><td><code>sort</code></td><td>The same array, reordered</td><td>Sort a table by price, name or date</td></tr>
+            <tr><td><code>slice</code></td><td>New array, a piece of it</td><td>Pagination, "show first 5", copy an array</td></tr>
+            <tr><td><code>forEach</code></td><td>Nothing</td><td>Run a side effect for each item (logging, saving). Not for building JSX</td></tr>
+            <tr><td><code>join</code></td><td>String</td><td>Turn tags into <code>"a, b, c"</code>, build class names</td></tr>
+            <tr><td><code>flat</code> / <code>flatMap</code></td><td>New flattened array</td><td>Merge arrays of arrays, collect nested lists (all tags of all posts)</td></tr>
+            <tr><td><code>Array.from</code></td><td>New array</td><td>Make N items for skeleton loaders, convert a Set into an array</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>map, filter, find: the daily three</h4>
+      <script type="text/plain" data-code data-title="products.jsx">
+const products = [
+  { id: 1, name: "Pen", price: 10, category: "stationery", inStock: true },
+  { id: 2, name: "Bag", price: 500, category: "travel", inStock: false },
+  { id: 3, name: "Book", price: 150, category: "stationery", inStock: true },
+];
+
+// map: one new item for every old item
+const names = products.map((p) => p.name);               // ["Pen", "Bag", "Book"]
+
+// map in JSX: always add a key
+const list = products.map((p) => <li key={p.id}>{p.name}</li>);
+
+// map to update one item (keep the others)
+const updated = products.map((p) => (p.id === 2 ? { ...p, inStock: true } : p));
+
+// filter: keep only items where the function returns true
+const available = products.filter((p) => p.inStock);       // Pen, Book
+const searched = products.filter((p) =>
+  p.name.toLowerCase().includes(query.toLowerCase())       // search box
+);
+const withoutBag = products.filter((p) => p.id !== 2);     // delete
+
+// find: the first match, or undefined
+const product = products.find((p) => p.id === 3);          // { id: 3, name: "Book", ... }
+      </script>
+      <div class="note"><p><code>map</code> and <code>filter</code> always return an array, so you can chain them: <code>products.filter((p) =&gt; p.inStock).map((p) =&gt; &lt;li key={p.id}&gt;{p.name}&lt;/li&gt;)</code> shows only the items in stock.</p></div>
+
+      <h4>some, every, includes, findIndex: yes/no questions</h4>
+      <script type="text/plain" data-code data-title="checks.js">
+const hasOutOfStock = products.some((p) => !p.inStock);    // true
+const allCheap = products.every((p) => p.price < 1000);    // true
+
+const selectedIds = [1, 3];
+const isSelected = selectedIds.includes(3);                // true  (works for numbers and strings)
+
+const index = products.findIndex((p) => p.id === 3);       // 2
+const notFound = products.findIndex((p) => p.id === 99);   // -1, always check this
+      </script>
+
+      <h4>reduce: many items into one value</h4>
+      <script type="text/plain" data-code data-title="reduce.js">
+// reduce((total, item) => newTotal, startValue)
+
+// 1. Total price of a cart
+const total = products.reduce((sum, p) => sum + p.price, 0);        // 660
+
+// 2. Count items by category
+const countByCategory = products.reduce((acc, p) => {
+  acc[p.category] = (acc[p.category] || 0) + 1;
+  return acc;
+}, {});                                                              // { stationery: 2, travel: 1 }
+
+// 3. Group items by category
+const grouped = products.reduce((acc, p) => {
+  (acc[p.category] ||= []).push(p);
+  return acc;
+}, {});                                                              // { stationery: [Pen, Book], travel: [Bag] }
+      </script>
+      <div class="note tip"><p>Always pass the start value (the <code>0</code> or <code>{}</code> at the end). Without it, <code>reduce</code> uses the first item as the start, and it crashes on an empty array.</p></div>
+
+      <h4>sort, slice, join, flat, Array.from</h4>
+      <script type="text/plain" data-code data-title="more.js">
+// sort: copy first, because sort changes the original array
+const byPriceLow = [...products].sort((a, b) => a.price - b.price);   // numbers: a - b
+const byPriceHigh = [...products].sort((a, b) => b.price - a.price);
+const byName = [...products].sort((a, b) => a.name.localeCompare(b.name)); // text
+
+// slice(start, end): a piece of the array, end is not included
+const firstTwo = products.slice(0, 2);
+const page = products.slice((pageNo - 1) * pageSize, pageNo * pageSize);  // pagination
+
+// join: array to string
+const tags = ["react", "js", "css"].join(", ");           // "react, js, css"
+
+// flat / flatMap: remove one level of nesting
+const nested = [[1, 2], [3], [4, 5]].flat();               // [1, 2, 3, 4, 5]
+const allTags = posts.flatMap((post) => post.tags);        // map + flat in one step
+
+// Array.from: build N items, or turn a Set into an array
+const skeletons = Array.from({ length: 5 }, (_, i) => i);  // [0, 1, 2, 3, 4]
+const uniqueIds = Array.from(new Set([1, 2, 2, 3]));       // [1, 2, 3]
+      </script>
+
+      <h4>Methods that change the original array</h4>
+      <p>These are fine in plain JavaScript but <b>not</b> on a React state array, because React will not see the change:</p>
+      <ul>
+        <li><code>push</code>, <code>pop</code>, <code>shift</code>, <code>unshift</code>, <code>splice</code>, <code>sort</code>, <code>reverse</code></li>
+      </ul>
+      <script type="text/plain" data-code data-title="state-safe.js">
+// Instead of push:    setItems([...items, newItem]);
+// Instead of unshift: setItems([newItem, ...items]);
+// Instead of splice:  setItems(items.filter((i) => i.id !== id));
+// Instead of sort:    setItems([...items].sort((a, b) => a.price - b.price));
+// Instead of reverse: setItems([...items].reverse());
+      </script>
+      <div class="note"><p>Common mistake: using <code>map</code> only to run code (no return value). Use <code>forEach</code> for that, or better, a normal event handler. Use <code>map</code> when you need the new array. Also remember that <code>find</code> returns <code>undefined</code> when nothing matches, so write <code>product?.name</code> before using it.</p></div>
+    </section>
+
+    <section class="topic" id="update-array-objects" data-group="more" data-kind="Pattern">
+      <h2>How to update state of an array of objects</h2>
+      <p>To change one field of one object inside a state array, use <code>map</code>. For the object you want, return a <b>copy</b> with the new value (<code>{ ...p, name: "New" }</code>). For all other objects, return them as they are. Then give the new array to the setter.</p>
+      <script type="text/plain" data-code data-title="App.jsx">
+import { useState } from "react";
+
+const initialProducts = [
+  { id: 1, name: "Pen", price: 10, category: "stationery", inStock: true },
+  { id: 2, name: "Bag", price: 500, category: "travel", inStock: false },
+  { id: 3, name: "Book", price: 150, category: "stationery", inStock: true },
+];
+
+const App = () => {
+  const [items, setItems] = useState(initialProducts);
+
+  const handleClick = () => {
+    setItems(
+      items.map((p) =>
+        p.id === 3 ? { ...p, name: "Bookish Me" } : p
+      )
+    );
+  };
+
+  return (
+    <div>
+      <ul>
+        {items.map((i) => (
+          <li key={i.id}>{i.name}</li>
+        ))}
+      </ul>
+      <button onClick={handleClick}>Change Item</button>
+    </div>
+  );
+};
+
+export default App;
+      </script>
+      <div class="note"><p>Two things to get right: map over the <b>state</b> (<code>items</code>), not the starting array, and spread the <b>single object</b> (<code>...p</code>), not the whole array. Writing <code>{ ...products, name: "Bookish Me" }</code> spreads the array into the object and creates keys <code>0</code>, <code>1</code>, <code>2</code> instead of <code>id</code>, <code>price</code> and so on. Mapping over the starting array instead of the state also loses earlier changes: a second update would start again from the original data.</p></div>
+
+      <h4>Update by id from a function</h4>
+      <p>In real projects each row has its own button, so pass the id (and the new value) into the handler. A small helper keeps all updates the same shape.</p>
+      <script type="text/plain" data-code data-title="updates.js">
+// Change any fields of one product: updateItem(3, { price: 200, name: "Notebook" })
+const updateItem = (id, changes) => {
+  setItems((prev) =>
+    prev.map((p) => (p.id === id ? { ...p, ...changes } : p))
+  );
+};
+
+// Toggle a boolean
+const toggleStock = (id) => {
+  setItems((prev) =>
+    prev.map((p) => (p.id === id ? { ...p, inStock: !p.inStock } : p))
+  );
+};
+
+// Change a value from an input
+const handleNameChange = (id, e) => {
+  updateItem(id, { name: e.target.value });
+};
+
+// Use in JSX
+// <button onClick={() => toggleStock(i.id)}>Toggle stock</button>
+// <input value={i.name} onChange={(e) => handleNameChange(i.id, e)} />
+      </script>
+      <div class="note tip"><p><code>{ ...p, ...changes }</code> copies all old fields, then the new ones overwrite them. The updater form <code>setItems((prev) =&gt; ...)</code> always starts from the latest state, which is safer when several updates happen quickly.</p></div>
+
+      <h4>Add and delete an object</h4>
+      <script type="text/plain" data-code data-title="add-delete.js">
+// Add
+const addItem = () => {
+  const newItem = { id: Date.now(), name: "Pencil", price: 5, category: "stationery", inStock: true };
+  setItems((prev) => [...prev, newItem]);
+};
+
+// Delete by id
+const deleteItem = (id) => {
+  setItems((prev) => prev.filter((p) => p.id !== id));
+};
+      </script>
+      <div class="note"><p>Do not change the object directly, like <code>items[2].name = "Bookish Me"</code>, then call <code>setItems(items)</code>. The array and the object are the same ones as before, so React sees no change and may not re-render. Always create a new array and a new object.</p></div>
+    </section>
+
   </main>
 </div>
 
